@@ -2,7 +2,7 @@
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.23**
+Current version: **v3.24**
 
 ## Features
 
@@ -34,15 +34,19 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.23.html` | The app |
+| `QMX-Fusion-Panadapter-v3.24.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
 | `README.txt` | Setup notes |
 
+## Changes in v3.24
+
+- Removed "PAN" from the titles. The header now reads QMX FUSION-PA, and the startup LCD text reads QMX Fusion-PA at its normal size.
+
 ## Changes in v3.23
 
-- The on-screen titles now read "Fusion-PA": the header (QMX FUSION-PA PAN), the startup LCD text, the server window and the setup notes.
+- The on-screen titles now read "Fusion-PA": the header, the startup LCD text, the server window and the setup notes.
 - Saved settings files are now named `QMX-Fusion-PA-settings-YYYY-MM-DD.json`. Settings files saved by earlier versions still load.
 
 ## License

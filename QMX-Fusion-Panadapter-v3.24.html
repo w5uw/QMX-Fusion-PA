@@ -1959,7 +1959,7 @@
                 z-index: 1000; text-align: center;">
         <h1 style="margin: 0; font-size: 1.2em; color: var(--accent-color); 
                    text-shadow: 0 0 10px var(--accent-color); font-weight: bold;">
-            QMX FUSION-PA PAN
+            QMX FUSION-PA
         </h1>
         <p style="margin: 0; font-size: 0.7em; color: #888; font-style: italic;">
             Advanced DSP Control Interface
@@ -2020,7 +2020,7 @@
                     <div id="currentTime"></div>
                 </div><div class="panel" id="vfoPanel"><h3>VFO &amp; Transmit</h3><div class="rf-vfo-grid"><button class="btn btn-primary" id="vfoA">VFO A</button><button class="btn btn-secondary" id="vfoB">VFO B</button><button class="btn btn-secondary" id="vfoSwap">A↔B</button><button class="btn btn-secondary" id="vfoCopy">A→B</button><button class="btn btn-secondary" id="txBtn">TX</button><button class="btn btn-primary" id="rxBtn">RX</button><button class="btn btn-secondary" id="toneBtn" type="button" title="SSB two-tone test (700 + 1900 Hz from the radio's built-in generator). Works in USB or LSB. Click to transmit, click again to stop. Stops by itself after 30 seconds.">TONE</button></div></div></div>
   <div class="panel frequency-display lcd-panel" id="lcdPanel">
-                <div id="lcdRow1" class="lcd-row"><span style="font-size:36px">QMX Fusion-PA Pan</span></div>
+                <div id="lcdRow1" class="lcd-row">QMX Fusion-PA</div>
                 <div id="lcdRow2" class="lcd-row">Connect Radio</div>
             </div>
   <div class="panel" id="metersPanel">
@@ -14518,7 +14518,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.23',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.24',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });
