@@ -1929,6 +1929,27 @@
 #qmxtab-radio #lcdPanel{min-height:0;padding:10px 16px;align-self:stretch}
 #qmxtab-radio #metersPanel{flex:0 1 360px!important;min-width:280px}
 #qmxtab-radio #lcdPanel{min-width:230px!important}
+/* v3.27: Connected/Time bar spans from VFO & Transmit to the Meter box; LCD is shorter and sits under it */
+#qmxtab-radio .rf-mid-col{flex:1 1 auto;min-width:0;display:flex;flex-direction:column;gap:6px}
+#qmxtab-radio .rf-mid-row{flex:1 1 auto;min-height:0;display:flex;gap:10px;align-items:stretch}
+#qmxtab-radio .rf-mid-row>.rf-vfo-col{flex:none}
+#qmxtab-radio .rf-mid-row>#lcdPanel{flex:1 1 auto;min-width:230px;align-self:stretch;padding:6px 12px}
+#qmxtab-radio .rf-status-wide{margin:0;padding:4px 10px;font-size:.75em;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:nowrap;white-space:nowrap;line-height:1.2;min-height:0}
+#qmxtab-radio .rf-clock{display:flex;align-items:center;gap:12px;font-family:'Courier New',monospace}
+#qmxtab-radio .clk-grp{display:inline-flex;align-items:center;gap:5px}
+#qmxtab-radio .clk-lbl{color:#9baebe;font-family:inherit;font-size:.9em}
+#qmxtab-radio .clk-val{color:var(--accent-color);font-weight:bold;font-size:1.15em}
+#qmxtab-radio .clk-sync{color:#36e7a0}
+#qmxtab-radio .clk-sync.stale{color:#ffc857}
+#qmxtab-radio .clk-sync.local{color:#9baebe}
+#qmxtab-radio select.clk-sel{margin:0;padding:1px 2px;font-size:1em;max-width:none;width:auto;height:auto;flex:none}
+#qmxtab-radio .rf-status-wide .status-indicator{display:flex;align-items:center;gap:6px;flex:none}
+#qmxtab-radio .rf-status-wide .status-dot{margin:0;flex:none}
+#qmxtab-radio .rf-clock>*{flex:none}
+@media(max-width:1500px){#qmxtab-radio .rf-clock{gap:8px}#qmxtab-radio .rf-status-wide{padding:4px 8px;gap:8px}}
+@media(max-width:1365px){#qmxtab-radio .rf-status-wide{font-size:.66em;gap:6px;padding:4px 6px}#qmxtab-radio .rf-clock{gap:6px}#qmxtab-radio .clk-grp{gap:3px}}
+#qmxtab-radio #lcdRow1{font-size:38px;line-height:1.1}
+#qmxtab-radio #lcdRow2{font-size:18px;margin-top:2px}
 /* v3.20: SSB Control box removed; Audio & DSP duplicates removed; TONE button on VFO & Transmit */
 #ssbControlPanel{display:none!important}
 .v320-removed{display:none!important}
@@ -2013,17 +2034,22 @@
                     <div class="mode-btn" data-mode="DIGI" data-catmode="6">DIGI</div>
                 </div>
             </div>
-  <div class="rf-vfo-col"><div class="status-bar">
+  <div class="rf-mid-col"><div class="status-bar rf-status-wide">
                     <div class="status-indicator">
                         <div class="status-dot" id="statusDot"></div>
                         <span class="status-text disconnected" id="statusText">DISCONNECTED</span>
                     </div>
-                    <div id="currentTime"></div>
-                </div><div class="panel" id="vfoPanel"><h3>VFO &amp; Transmit</h3><div class="rf-vfo-grid"><button class="btn btn-primary" id="vfoA">VFO A</button><button class="btn btn-secondary" id="vfoB">VFO B</button><button class="btn btn-secondary" id="vfoSwap">A↔B</button><button class="btn btn-secondary" id="vfoCopy">A→B</button><button class="btn btn-secondary" id="txBtn">TX</button><button class="btn btn-primary" id="rxBtn">RX</button><button class="btn btn-secondary" id="toneBtn" type="button" title="SSB two-tone test (700 + 1900 Hz from the radio's built-in generator). Works in USB or LSB. Click to transmit, click again to stop. Stops by itself after 30 seconds.">TONE</button></div></div></div>
+                    <div id="currentTime" class="rf-clock">
+                        <span class="clk-grp"><span class="clk-lbl">LOCAL</span><span class="clk-val" id="clkLocal">--:--:--</span><select id="clkZone" class="clk-sel" title="Time zone for the local clock"></select></span>
+                        <span class="clk-grp"><span class="clk-lbl">UTC</span><span class="clk-val" id="clkUtc">--:--:--</span></span>
+                        <span class="clk-sync" id="clkSync" title="Not synchronized yet">(LOCAL)</span>
+                        <span class="clk-grp" title="Which time is written to the QMX real-time clock. A GPS sets the QMX to UTC."><span class="clk-lbl">QMX</span><select id="clkRadio" class="clk-sel"><option value="local">Local</option><option value="utc">UTC</option></select></span>
+                    </div>
+                </div><div class="rf-mid-row"><div class="rf-vfo-col"><div class="panel" id="vfoPanel"><h3>VFO &amp; Transmit</h3><div class="rf-vfo-grid"><button class="btn btn-primary" id="vfoA">VFO A</button><button class="btn btn-secondary" id="vfoB">VFO B</button><button class="btn btn-secondary" id="vfoSwap">A↔B</button><button class="btn btn-secondary" id="vfoCopy">A→B</button><button class="btn btn-secondary" id="txBtn">TX</button><button class="btn btn-primary" id="rxBtn">RX</button><button class="btn btn-secondary" id="toneBtn" type="button" title="SSB two-tone test (700 + 1900 Hz from the radio's built-in generator). Works in USB or LSB. Click to transmit, click again to stop. Stops by itself after 30 seconds.">TONE</button></div></div></div>
   <div class="panel frequency-display lcd-panel" id="lcdPanel">
                 <div id="lcdRow1" class="lcd-row">QMX Fusion-PA</div>
                 <div id="lcdRow2" class="lcd-row">Connect Radio</div>
-            </div>
+            </div></div></div>
   <div class="panel" id="metersPanel">
     <h3 class="am-head"><span>Meter</span><span class="am-switch" role="tablist"><button type="button" class="am-sw" data-meter="s" title="Show the S-meter">SIGNAL</button><button type="button" class="am-sw" data-meter="swr" title="Show the SWR meter">SWR</button><button type="button" class="am-sw" data-meter="pwr" title="Show the power-out meter">POWER</button></span></h3>
    <div class="am-pair" title="Click the meter to step through SIGNAL, SWR and POWER">
@@ -4742,80 +4768,143 @@ animateSWRNeedle() {
                 setTimeout(() => this.updateClock(), 1000);
             }
 
+            // v3.27 time sync: working services only, 5 s limit each, correct UTC handling,
+            // retry after 1 minute on failure, reasons written to the CAT log.
             async initTimeSync() {
-                try {
-                    this.logCAT('Initializing time synchronization...', 'info');
-                    
-                    await this.syncTimeFromServer();
-                    
-                    this.clockUpdateInterval = setInterval(() => {
-                        this.updateSyncedClock();
-                        this.updateLoggerInfoBar();
-                    }, 1000);
-                    
-                    this.timeSyncInterval = setInterval(() => {
-                        this.syncTimeFromServer();
-                    }, 10 * 60 * 1000);
-                    
-                    console.log('Time synchronization initialized');
-                } catch (error) {
-                    console.error('Error initializing time sync:', error);
-                    this.logCAT(`Time sync init error: ${error.message}`, 'error');
-                    this.updateLocalClock();
+                this.localTimeOffset = 0;
+                this.lastSyncTime = 0;
+                this.initClockControls();
+                if (this.clockUpdateInterval) clearInterval(this.clockUpdateInterval);
+                this.clockUpdateInterval = setInterval(() => {
+                    this.updateSyncedClock();
+                    this.updateLoggerInfoBar();
+                }, 1000);
+                this.updateSyncedClock();
+                this.logCAT('Initializing time synchronization...', 'info');
+                this.syncTimeFromServer();
+            }
+
+            timeZoneChoices() {
+                const pc = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+                const list = [
+                    ['', `PC zone`],
+                    ['America/New_York', 'Eastern'], ['America/Chicago', 'Central'], ['America/Denver', 'Mountain'],
+                    ['America/Phoenix', 'Arizona'], ['America/Los_Angeles', 'Pacific'], ['America/Anchorage', 'Alaska'],
+                    ['Pacific/Honolulu', 'Hawaii'], ['Europe/London', 'London'], ['Europe/Berlin', 'C. Europe'],
+                    ['Asia/Kolkata', 'India'], ['Asia/Tokyo', 'Japan'], ['Australia/Sydney', 'Sydney']
+                ];
+                for (let h = -12; h <= 14; h++) {
+                    if (h === 0) continue;
+                    // IANA "Etc/GMT+6" means UTC-6 (the sign is reversed).
+                    list.push([`Etc/GMT${h < 0 ? '+' : '-'}${Math.abs(h)}`, `UTC${h < 0 ? '\u2212' : '+'}${String(Math.abs(h)).padStart(2, '0')}`]);
                 }
+                return { pc, list };
+            }
+
+            initClockControls() {
+                const zoneSel = document.getElementById('clkZone');
+                const radioSel = document.getElementById('clkRadio');
+                if (!zoneSel || zoneSel.dataset.ready) return;
+                zoneSel.dataset.ready = '1';
+                const { pc, list } = this.timeZoneChoices();
+                const group = (label) => { const g = document.createElement('optgroup'); g.label = label; zoneSel.appendChild(g); return g; };
+                const named = group('Named zones (follow daylight saving)'), fixed = group('Fixed offset from UTC (no daylight saving)');
+                for (const [id, label] of list) {
+                    const o = document.createElement('option'); o.value = id; o.textContent = label;
+                    o.title = id ? id : `Your PC time zone: ${pc}`;
+                    (id.startsWith('Etc/') ? fixed : named).appendChild(o);
+                }
+                let saved = '';
+                try { saved = localStorage.getItem('qmxClockZone') || ''; } catch {}
+                if (saved && !list.some(([id]) => id === saved)) saved = '';
+                zoneSel.value = saved;
+                try { radioSel.value = localStorage.getItem('qmxClockRadio') === 'utc' ? 'utc' : 'local'; } catch {}
+                zoneSel.addEventListener('change', () => {
+                    try { localStorage.setItem('qmxClockZone', zoneSel.value); } catch {}
+                    this.updateSyncedClock();
+                    this.logCAT(`Local clock time zone: ${this.clockZone()}`, 'info');
+                    if (radioSel.value === 'local') this.sendTimeToQMX();
+                });
+                radioSel.addEventListener('change', () => {
+                    try { localStorage.setItem('qmxClockRadio', radioSel.value); } catch {}
+                    this.logCAT(`QMX clock will be set to ${radioSel.value === 'utc' ? 'UTC' : 'local time (' + this.clockZone() + ')'}`, 'info');
+                    this.sendTimeToQMX();
+                });
+            }
+
+            clockZone() {
+                const el = document.getElementById('clkZone');
+                return (el && el.value) || Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+            }
+
+            // Hours, minutes and seconds of a moment in a given time zone.
+            timeParts(date, timeZone) {
+                const p = {};
+                for (const x of new Intl.DateTimeFormat('en-GB', { timeZone, hourCycle: 'h23', hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short' }).formatToParts(date)) p[x.type] = x.value;
+                return { h: p.hour, m: p.minute, s: p.second, tz: p.timeZoneName || '' };
             }
 
             async syncTimeFromServer() {
+                if (this.timeSyncInterval) { clearTimeout(this.timeSyncInterval); this.timeSyncInterval = null; }
+                if (this._syncing) return;
+                this._syncing = true;
+                // Server strings without a zone are UTC; add "Z" so the PC does not read them as local time.
+                const asUtc = (str) => {
+                    let t = String(str || '').trim().replace(/(\.\d{3})\d+/, '$1');
+                    if (!/(Z|[+-]\d\d:?\d\d)$/i.test(t)) t += 'Z';
+                    const ms = Date.parse(t);
+                    if (!Number.isFinite(ms)) throw new Error('unexpected reply');
+                    return ms;
+                };
+                const services = [
+                    { name: 'time.now', url: 'https://time.now/developer/api/timezone/Etc/UTC', read: async r => asUtc((await r.json()).datetime) },
+                    { name: 'timeapi.io', url: 'https://timeapi.io/api/Time/current/zone?timeZone=UTC', read: async r => asUtc((await r.json()).dateTime) },
+                    { name: 'Cloudflare', url: 'https://www.cloudflare.com/cdn-cgi/trace', read: async r => {
+                        const m = /(?:^|\n)ts=([\d.]+)/.exec(await r.text()); if (!m) throw new Error('unexpected reply'); return Number(m[1]) * 1000; } }
+                ];
+                const LIMIT = 5000;
+                const reasons = [];
+                let ok = false;
                 try {
-                    this.logCAT('Synchronizing with time server...', 'info');
-                    
-                    const timeAPIs = [
-                        'https://worldtimeapi.org/api/timezone/Etc/UTC',
-                        'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
-                        'http://worldclockapi.com/api/json/utc/now'
-                    ];
-                    
-                    let syncSuccessful = false;
-                    
-                    for (const api of timeAPIs) {
+                    for (const svc of services) {
+                        const ctl = new AbortController();
+                        const timer = setTimeout(() => ctl.abort(), LIMIT);
+                        const t0 = Date.now();
                         try {
-                            const response = await fetch(api, {
-                                method: 'GET', cache: 'no-cache', headers: { 'Accept': 'application/json' }
-                            });
-                            
-                            if (!response.ok) continue;
-                            
-                            const data = await response.json();
-                            let serverTime;
-                            
-                            if (data.datetime) serverTime = new Date(data.datetime);
-                            else if (data.dateTime) serverTime = new Date(data.dateTime);
-                            else if (data.currentDateTime) serverTime = new Date(data.currentDateTime);
-                            else continue;
-                            
-                            const localTime = new Date();
-                            this.localTimeOffset = serverTime.getTime() - localTime.getTime();
-                            this.lastSyncTime = localTime.getTime();
-                            
-                            this.logCAT(`Time synced successfully (offset: ${this.localTimeOffset}ms)`, 'info');
-                            syncSuccessful = true;
-                            
-                            this.sendTimeToQMX();
+                            const r = await fetch(svc.url, { method: 'GET', cache: 'no-store', signal: ctl.signal });
+                            if (!r.ok) throw new Error(`server error ${r.status}`);
+                            const serverMs = await svc.read(r);
+                            const t1 = Date.now();
+                            // Correct for the round trip: the server read its clock about halfway through.
+                            this.localTimeOffset = Math.round(serverMs - (t0 + t1) / 2);
+                            this.lastSyncTime = t1;
+                            this.lastSyncSource = svc.name;
+                            this.lastSyncRtt = t1 - t0;
+                            this.logCAT(`Time synced with ${svc.name} (PC clock ${this.localTimeOffset >= 0 ? 'behind' : 'ahead'} by ${Math.abs(this.localTimeOffset)} ms, reply in ${t1 - t0} ms)`, 'info');
+                            if (Math.abs(this.localTimeOffset) > 120000) this.logCAT(`Time sync: the PC clock is off by more than 2 minutes; check the Windows clock settings.`, 'error');
+                            ok = true;
                             break;
-                            
-                        } catch (apiError) {
-                            console.warn(`Time API ${api} failed:`, apiError);
-                            continue;
+                        } catch (e) {
+                            const why = e.name === 'AbortError' ? `no reply within ${LIMIT / 1000} s` : (e instanceof TypeError ? 'could not connect (offline or blocked)' : e.message);
+                            reasons.push(`${svc.name}: ${why}`);
+                            this.logCAT(`Time sync: ${svc.name} failed (${why})`, 'error');
+                        } finally {
+                            clearTimeout(timer);
                         }
                     }
-                    
-                    if (!syncSuccessful) throw new Error('All time APIs failed');
-                    
-                } catch (error) {
-                    console.error('Time sync failed:', error);
-                    this.logCAT(`Time sync failed: ${error.message}`, 'error');
-                    this.localTimeOffset = 0;
+                } finally {
+                    this._syncing = false;
                 }
+                if (ok) {
+                    this.lastSyncError = '';
+                    this.sendTimeToQMX();
+                    this.timeSyncInterval = setTimeout(() => this.syncTimeFromServer(), 10 * 60 * 1000);
+                } else {
+                    this.lastSyncError = reasons.join('; ');
+                    this.logCAT(`Time sync failed on all services; trying again in 1 minute.${this.lastSyncTime ? ' The clock keeps the last correction.' : ' Using the PC clock.'}`, 'error');
+                    this.timeSyncInterval = setTimeout(() => this.syncTimeFromServer(), 60 * 1000);
+                }
+                this.updateSyncedClock();
             }
 
             getSyncedTime() {
@@ -4824,18 +4913,21 @@ animateSWRNeedle() {
             }
 
             updateSyncedClock() {
-                const syncedUTC = this.getSyncedTime();
-                const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
-                
-                const timeString = localTime.toLocaleTimeString('en-US', {
-                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
-                
-                const timeElement = document.getElementById('currentTime');
-                if (timeElement) {
-                    const syncAge = this.lastSyncTime ? Date.now() - this.lastSyncTime : Infinity;
-                    const syncIndicator = syncAge > 11 * 60 * 1000 ? ' (SYNC?)' : ' (SYNC)';
-                    timeElement.textContent = timeString + (this.lastSyncTime ? syncIndicator : ' (LOCAL)');
+                const now = this.getSyncedTime();
+                const zone = this.clockZone();
+                const lt = this.timeParts(now, zone), ut = this.timeParts(now, 'UTC');
+                const loc = document.getElementById('clkLocal'), utc = document.getElementById('clkUtc'), flag = document.getElementById('clkSync');
+                if (loc) { loc.textContent = `${lt.h}:${lt.m}:${lt.s}`; loc.title = `${zone} (${lt.tz})`; }
+                if (utc) utc.textContent = `${ut.h}:${ut.m}:${ut.s}`;
+                if (flag) {
+                    const age = this.lastSyncTime ? Date.now() - this.lastSyncTime : Infinity;
+                    let text, cls, tip;
+                    if (!this.lastSyncTime) { text = '(LOCAL)'; cls = 'local'; tip = 'Not synchronized; showing the PC clock.' + (this.lastSyncError ? ' Last try: ' + this.lastSyncError : ''); }
+                    else if (age > 11 * 60 * 1000) { text = '(SYNC?)'; cls = 'stale'; tip = `Last sync ${Math.round(age / 60000)} min ago with ${this.lastSyncSource}; retrying every minute.` + (this.lastSyncError ? ' Last try: ' + this.lastSyncError : ''); }
+                    else { text = '(SYNC)'; cls = ''; tip = `Synced with ${this.lastSyncSource} ${Math.max(0, Math.round(age / 60000))} min ago; PC clock correction ${this.localTimeOffset} ms.`; }
+                    if (flag.textContent !== text) flag.textContent = text;
+                    flag.className = 'clk-sync' + (cls ? ' ' + cls : '');
+                    flag.title = tip;
                 }
             }
 
@@ -4879,40 +4971,26 @@ getVFOCommand() {
     return this.currentVFO === 'B' ? 'FB' : 'FA';
 }
 
-		   updateLocalClock() {
-                const now = new Date();
-                const timeString = now.toLocaleTimeString('en-US', {
-                    hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit'
-                });
-                
-                const timeElement = document.getElementById('currentTime');
-                if (timeElement) {
-                    timeElement.textContent = timeString + ' (LOCAL)';
-                }
-                
-                setTimeout(() => this.updateLocalClock(), 1000);
-            }
+		   updateLocalClock() { this.updateSyncedClock(); }
 
             sendTimeToQMX() {
                 if (this.timeCommandTimeout) clearTimeout(this.timeCommandTimeout);
-                
                 this.timeCommandTimeout = setTimeout(() => {
-                    if (this.connected && this.port && this.writer) {
-                        const syncedUTC = this.getSyncedTime();
-                        const localTime = new Date(syncedUTC.getTime() - (syncedUTC.getTimezoneOffset() * 60000));
-                        
-                        const hours = localTime.getHours().toString().padStart(2, '0');
-                        const minutes = localTime.getMinutes().toString().padStart(2, '0');
-                        const seconds = localTime.getSeconds().toString().padStart(2, '0');
-                        const timeCommand = `TM${hours}${minutes}${seconds}`;
-                        
-                        this.sendCommand(timeCommand).then(() => {
-                            this.logCAT(`Local time sent to QMX: ${hours}:${minutes}:${seconds}`, 'info');
-                        }).catch(e => {
-                            console.error("Time command error:", e);
-                        });
-                    }
                     this.timeCommandTimeout = null;
+                    if (!(this.connected && this.port && this.writer)) return;
+                    const sel = document.getElementById('clkRadio');
+                    const useUtc = sel && sel.value === 'utc';
+                    const zone = useUtc ? 'UTC' : this.clockZone();
+                    // Aim for the start of the next second so the radio's seconds tick in step.
+                    const now = this.getSyncedTime();
+                    const wait = 1000 - now.getUTCMilliseconds();
+                    setTimeout(() => {
+                        if (!(this.connected && this.writer)) return;
+                        const t = this.timeParts(new Date(this.getSyncedTime().getTime() + 20), zone);
+                        this.sendCommand(`TM${t.h}${t.m}${t.s}`).then(() => {
+                            this.logCAT(`${useUtc ? 'UTC' : 'Local time (' + zone + ')'} sent to QMX: ${t.h}:${t.m}:${t.s}`, 'info');
+                        }).catch(e => console.error('Time command error:', e));
+                    }, wait);
                 }, 100);
             }
 
@@ -14507,7 +14585,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.26',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.27',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });

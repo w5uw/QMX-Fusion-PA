@@ -2,7 +2,7 @@
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.26**
+Current version: **v3.27**
 
 ## Features
 
@@ -12,6 +12,7 @@ Current version: **v3.26**
 - **Meters**: needle meters for signal, SWR and power. The power meter holds its peak for 2 seconds.
 - **Power knob**: sets the radio's Max. PA voltage in 0.1 V steps to lower transmit power. After each change the app brings the audio stream back.
 - **TONE button**: sends the radio's built-in 700 + 1900 Hz two-tone test in USB or LSB. It stops by itself after 30 seconds.
+- **Clock**: shows local and UTC time side by side, set from internet time services. The local time zone can be chosen, and the QMX clock can be set to local or UTC time.
 - **Auto Tune**: reads the panadapter spectrum and retunes onto the strongest nearby signal. In CW it puts the carrier on the dial; in USB and LSB it centres the voice 1500 Hz from the dial. Needs the spectrum display running.
 
 ## Requirements
@@ -34,11 +35,20 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.26.html` | The app |
+| `QMX-Fusion-Panadapter-v3.27.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
 | `README.txt` | Setup notes |
+
+## Changes in v3.27
+
+- Fixed the time sync, which showed (SYNC?) because two of its time services had stopped working. It now tries time.now, then timeapi.io, then Cloudflare, with a 5-second limit on each. worldtimeapi.org and worldclockapi.com were removed.
+- Fixed a time-zone bug that made the app's internal clock 6 hours fast. QSO log UTC times are now correct; entries saved under v3.26 or earlier may be 6 hours late.
+- A failed sync now retries after 1 minute. The CAT log records why it failed, and hovering over the SYNC tag shows details.
+- Radio tab: the frequency display box is shorter, and the Connected/Time bar now runs across to the Meter box.
+- The bar shows both LOCAL and UTC time. A time-zone picker offers named zones (which follow daylight saving time) and fixed offsets from UTC-12 to UTC+14.
+- New QMX picker chooses whether the radio's clock is set to Local (default, as before) or UTC time. Both choices are remembered.
 
 ## Changes in v3.26
 
