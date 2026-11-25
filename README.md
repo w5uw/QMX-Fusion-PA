@@ -2,7 +2,7 @@
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.31**
+Current version: **v3.34**
 
 ## Features
 
@@ -11,7 +11,7 @@ Current version: **v3.31**
 - **PC Receiver**: plays the radio's audio through the PC in USB, LSB, CW and AM, with filters, AGC, Auto Notch and SSB filter presets.
 - **Meters**: needle meters for signal, SWR and power. The power meter holds its peak for 2 seconds.
 - **Power knob**: sets the radio's Max. PA voltage in 0.1 V steps to lower transmit power. After each change the app brings the audio stream back.
-- **PC Mic**: talk through a PC microphone or headset. The app sends the mic into the QMX over USB while the radio transmits in USB or LSB, with Mic Gain and a level meter. The Voice Keyer's SEND button transmits recorded messages the same way.
+- **PC Mic**: a TX Audio switch picks HAND MIC (the mic plugged into the radio, with a Hand Mic Gain slider) or PC MIC. With PC MIC you talk through a PC microphone or headset. The app sends the mic into the QMX over USB while the radio transmits in USB or LSB, with Mic Gain and a level meter. The Voice Keyer's SEND button transmits recorded messages the same way.
 - **TONE button**: sends the radio's built-in 700 + 1900 Hz two-tone test in USB or LSB. It stops by itself after 30 seconds.
 - **Clock**: shows local and UTC time side by side, set from internet time services. The local time zone can be chosen, and the QMX clock can be set to local or UTC time.
 - **Auto Tune**: reads the panadapter spectrum and retunes onto the strongest nearby signal. In CW it puts the carrier on the dial; in USB and LSB it centres the voice 1500 Hz from the dial. Needs the spectrum display running.
@@ -36,11 +36,34 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.31.html` | The app |
+| `QMX-Fusion-Panadapter-v3.34.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
 | `README.txt` | Setup notes |
+
+## Changes in v3.34
+- Space bar TX/RX with PC MIC chosen: press once to transmit, again to receive. Esc always returns to receive.
+  - Ignored while typing in a text box or list, with HAND MIC chosen, or outside USB and LSB.
+  - The space bar no longer scrolls the page or presses a focused button while PC MIC is chosen.
+  - A transmission started from the space bar returns to receive by itself after 3 minutes.
+  - Confirmed on the QMX+.
+
+## Changes in v3.33
+- Hand Mic Gain slider in the PC Mic box (shown with HAND MIC). It reads and writes the radio's SSB > Microphone > Gain menu setting (default 50 dB) with the Menu Manager commands, reads each write back, then reloads the radio's settings. A change made while transmitting is written on return to receive.
+- Mic Gain and the level meter, which only apply to the PC mic, are hidden while HAND MIC is chosen.
+- After any settings reload (Power knob or Hand Mic Gain), the app sets the SSB source again to match the TX Audio switch.
+- On connect, the CAT log shows the radio's saved SSB > Input menu setting.
+- Not yet confirmed with a hand mic on the radio.
+
+## Changes in v3.32
+- Hand mic fix: after the PC Mic or a Voice Keyer SEND, the radio stayed on USB audio, so a hand mic plugged into the radio keyed the transmitter with no audio.
+  - New TX Audio switch in the PC Mic box: HAND MIC or PC MIC. It replaces the "Send PC mic on TX" tick box.
+  - HAND MIC sets the radio's SSB input to its mic jack (SS2). PC MIC sets it to USB audio (SS0) and opens the PC microphone.
+  - With HAND MIC chosen, the radio goes back to its mic jack after every Voice Keyer SEND, as soon as it returns to receive.
+  - On connect with HAND MIC chosen, the app puts the radio back on its mic jack if an earlier session left it on USB audio or the two-tone test.
+  - A line under the switch shows the radio's current TX audio source.
+  - Not yet confirmed with a hand mic on the radio.
 
 ## Changes in v3.31
 - Voice Keyer SEND fix: the radio keyed but no audio reached the transmitter.
