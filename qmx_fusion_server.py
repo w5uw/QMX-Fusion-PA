@@ -114,7 +114,7 @@ def open_chrome(url):
 def main():
     n = default()
     url = f"http://localhost:{PORT}/" + (n or "")
-    print("QMX Fusion-PA local server (v3.24, with default-version pin)")
+    print("QMX Fusion-PA local server (v3.26, with default-version pin)")
     print("==============================")
     if not n:
         print("No QMX-Fusion-Panadapter-vX.YY.html file found in", HERE)

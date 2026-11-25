@@ -1881,6 +1881,7 @@
 #qmxtab-radio .band-btn{padding:6px 4px;font-size:.8em;text-align:center}
 #qmxtab-radio .rf-autotune{display:flex;flex-direction:column;gap:6px}
 #qmxtab-radio .rf-autotune .btn{width:100%;margin:0}
+#qmxtab-radio .autotune-note{font-size:.68em;line-height:1.3;color:#9baebe;text-align:center;min-height:2.6em}
 #qmxtab-radio .pa-knob-wrap{width:170px;height:170px;margin:36px auto 30px}
 #qmxtab-radio .pa-knob-wrap .frequency-markings{width:226px;height:226px}
 #qmxtab-radio .rf-c5 label{display:block;margin:5px 0}
@@ -2420,19 +2421,7 @@
         </div>
     </div>
 
-    <!-- Target Pitch - centered -->
-    <div style="text-align: center; margin-bottom: 8px;">
-        <span style="font-size: 0.9em;">Target CW Pitch:</span>
-		
-				
-		
-       
-        <select id="targetPitch" style="margin-left: 8px;">
-            <option value="600">600 Hz</option>
-            <option value="700" selected>700 Hz</option>
-            <option value="800">800 Hz</option>
-        </select>
-		</div>
+
 		
 		<div style="text-align: center; margin-bottom: 8px; background: rgba(0,0,0,0.2); padding: 5px; border-radius: 5px;">
         <span style="font-size: 0.9em;">Spectrum Mode:</span>
@@ -9181,7 +9170,7 @@ initSpectrumDisplay() {
     };
 
     const targetPitchSelect = document.getElementById('targetPitch');
-    targetPitchSelect.addEventListener('change', (e) => {
+    if (targetPitchSelect) targetPitchSelect.addEventListener('change', (e) => {
         this.targetPitch = parseInt(e.target.value, 10);
         this.logCAT(`Target CW pitch set to ${this.targetPitch} Hz`, 'info');
 		
@@ -14518,7 +14507,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.24',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.26',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });
@@ -14980,6 +14969,122 @@ document.addEventListener('DOMContentLoaded', () => {
  paint();
 })();
 
+// ── v3.25 Auto Tune rebuilt on the panadapter I/Q spectrum ──
+// The old Auto Tune listened to the pre-v3 "Audio Stream". Pressing AUTOTUNE NOW started that stream,
+// which shut the panadapter down (I/Q off) and cut the PC audio. This version only reads the spectrum the
+// running panadapter already computes, never touches the audio, and retunes with an ordinary frequency command.
+//  CW : centres the strongest carrier within ±800 Hz of the dial on the dial (the yellow marker), so the
+//       radio hears it at its sidetone pitch and the PC Receiver at its CW pitch.
+//  USB/LSB : finds the strongest voice signal near the passband and puts its centre 1500 Hz from the dial.
+(()=>{
+ const $=id=>document.getElementById(id);
+ const APP=()=>window.qmxApp;
+ const CW_WIN=800, CW_TOL=15, CW_SNR=10, SSB_TOL=50, SSB_SNR=6, SSB_CENTER=1500, SSB_WIN=2500;
+ let busy=false, timer=null;
+ const setNote=(t,col)=>{const el=$('autotuneNote');if(el){el.textContent=t;el.style.color=col||'#9baebe';}};
+ const say=(t,col,lvl)=>{setNote(t,col);try{APP().logCAT('Auto Tune: '+t,lvl||'info');}catch{}};
+ function ready(a){
+  const pa=a&&a.panadapterV2;
+  if(!a||!a.connected)return 'connect the radio first.';
+  if(a.transmitting)return 'not while transmitting.';
+  const m=String(a.mode||'');
+  if(!/^CW/.test(m)&&m!=='USB'&&m!=='LSB')return `works in CW, USB and LSB only (now ${m||'unknown'}).`;
+  if(!pa||!pa.running||!pa.db||!pa.frames)return 'start the spectrum display first (Radio tab, Receive Display).';
+  if(pa.paused)return 'the display is stopped; press START DISPLAY so Auto Tune can see the spectrum.';
+  return '';
+ }
+ // Average the panadapter spectrum (linear power) for ms milliseconds.
+ function collect(pa,ms){return new Promise(res=>{
+  const n=pa.n,acc=new Float64Array(n);let cnt=0,last=-1;const t0=performance.now();
+  const iv=setInterval(()=>{
+   if(!pa.running||pa.paused||APP().transmitting){clearInterval(iv);res(null);return;}
+   if(pa.frames!==last){last=pa.frames;for(let k=0;k<n;k++)acc[k]+=Math.pow(10,pa.db[k]/10);cnt++;}
+   if(performance.now()-t0>=ms){clearInterval(iv);if(!cnt){res(null);return;}
+    const out=new Float64Array(n);for(let k=0;k<n;k++)out[k]=10*Math.log10(acc[k]/cnt+1e-30);res({db:out,cnt});}
+  },40);
+ });}
+ const median=arr=>{const s=Array.from(arr).filter(Number.isFinite).sort((x,y)=>x-y);return s.length?s[s.length>>1]:-160;};
+ function scanCW(pa,db,dial){
+  const n=pa.n,bw=(pa.rate||48000)/n;
+  const b0=Math.max(1,Math.floor(pa.binAtHz(dial-CW_WIN))),b1=Math.min(n-2,Math.ceil(pa.binAtHz(dial+CW_WIN)));
+  if(b1<=b0)return {err:'the dial is outside the spectrum window.'};
+  const floor=median(db);let pk=-1,pv=-Infinity;
+  for(let k=b0;k<=b1;k++)if(db[k]>pv){pv=db[k];pk=k;}
+  const snr=pv-floor;
+  if(pk<0||snr<CW_SNR)return {none:true,snr};
+  const y0=db[pk-1],y1=db[pk],y2=db[pk+1],den=y0-2*y1+y2,frac=den<0?Math.max(-.5,Math.min(.5,.5*(y0-y2)/den)):0;
+  const hz=pa.centerHz()-(pa.rate||48000)/2+(pk+frac)*bw;
+  return {hz,snr,delta:Math.round(hz-dial)};
+ }
+ function scanSSB(pa,db,dial,usb){
+  const n=pa.n,bw=(pa.rate||48000)/n,want=usb?dial+SSB_CENTER:dial-SSB_CENTER;
+  const b0=Math.max(0,Math.floor(pa.binAtHz(want-SSB_WIN))),b1=Math.min(n-1,Math.ceil(pa.binAtHz(want+SSB_WIN)));
+  if(b1<=b0)return {err:'the dial is outside the spectrum window.'};
+  const floor=median(db),sm=new Float64Array(n),H=3;
+  for(let k=0;k<n;k++){let s=0,c=0;for(let j=k-H;j<=k+H;j++)if(j>=0&&j<n){s+=db[j];c++;}sm[k]=s/c;}
+  let pk=-1,pv=-Infinity;for(let k=b0;k<=b1;k++)if(sm[k]>pv){pv=sm[k];pk=k;}
+  const snr=pv-floor;if(pk<0||snr<SSB_SNR)return {none:true,snr};
+  const th=floor+SSB_SNR*.5;let lo=pk,hi=pk;
+  while(lo>0&&sm[lo-1]>th&&(pk-lo)*bw<4000)lo--;while(hi<n-1&&sm[hi+1]>th&&(hi-pk)*bw<4000)hi++;
+  const width=(hi-lo+1)*bw;
+  if(width<300)return {narrow:true,width,snr};
+  let ws=0,ps=0;for(let k=lo;k<=hi;k++){const p=Math.pow(10,(sm[k]-floor)/10)-1;if(p>0){ws+=k*p;ps+=p;}}
+  if(!ps)return {none:true,snr};
+  const hz=pa.centerHz()-(pa.rate||48000)/2+(ws/ps)*bw;
+  return {hz,snr,width,delta:Math.round((hz-want)/10)*10};
+ }
+ async function scan(manual){
+  const a=APP();if(!a)return;
+  const why=ready(a);if(why){if(manual||a.autotuneEnabled)say(why,'#ffc857');return;}
+  if(busy)return;busy=true;
+  try{
+   const pa=a.panadapterV2,cw=/^CW/.test(String(a.mode)),usb=a.mode==='USB';
+   const f0=Math.round(Number(a.frequency));
+   setNote(`Listening (${cw?'CW':a.mode})…`,'#36e7a0');
+   const avg=await collect(pa,cw?800:1500);
+   if(!avg){say('scan stopped (display stopped, transmit or disconnect).','#ffc857');return;}
+   if(Math.round(Number(a.frequency))!==f0){setNote('Dial moved during the scan; nothing changed.');return;}
+   const r=cw?scanCW(pa,avg.db,f0):scanSSB(pa,avg.db,f0,usb);
+   if(r.err){say(r.err,'#ffc857');return;}
+   if(r.none){say(`no signal strong enough ${cw?'within ±800 Hz of the dial':'near the passband'} (best ${Math.max(0,r.snr).toFixed(0)} dB above noise).`,'#9baebe');return;}
+   if(r.narrow){say(`strongest signal is only ${r.width.toFixed(0)} Hz wide; that looks like a carrier, not voice. Try CW mode.`,'#9baebe');return;}
+   const tol=cw?CW_TOL:SSB_TOL;
+   if(Math.abs(r.delta)<=tol){say(`already on frequency (${r.delta>=0?'+':''}${r.delta} Hz, ${r.snr.toFixed(0)} dB above noise).`,'#36e7a0');return;}
+   if(a.transmitting||!a.connected)return;
+   a.updateFrequency(r.delta);a.sendFrequencyImmediate();
+   say(`${cw?'carrier':'voice centre'} found ${r.snr.toFixed(0)} dB above noise; tuned ${r.delta>0?'+':''}${r.delta} Hz to ${(a.frequency/1e6).toFixed(6)} MHz.`,'#36e7a0');
+  }catch(e){say('error: '+e.message,'#ff6b6b','error');}
+  finally{busy=false;}
+ }
+ function install(){
+  const a=APP();if(!a){setTimeout(install,200);return;}
+  // Replace the old scan functions so knob, wheel and click-to-tune hooks use the new one.
+  a.performAutotuneScan=()=>scan(false);
+  a.triggerAutotuneScan=()=>{if(!a.autotuneEnabled)return;clearTimeout(timer);timer=setTimeout(()=>scan(false),900);};
+  // Swap the buttons for clean copies, dropping the old listeners (the old NOW button started the Audio Stream).
+  const on=$('autotuneBtn'),now=$('manualScanBtn');
+  const on2=on.cloneNode(false),now2=now.cloneNode(false);
+  on2.textContent=a.autotuneEnabled?'AUTOTUNE ON':'AUTOTUNE OFF';now2.textContent='AUTOTUNE NOW';
+  on2.title='When on, Auto Tune runs about 1 second after you stop tuning and snaps to the strongest nearby signal. Needs the spectrum display running.';
+  now2.title='Tune once to the strongest nearby signal. CW: within ±800 Hz of the dial. USB/LSB: voice centred 1500 Hz from the dial. Needs the spectrum display running.';
+  on.replaceWith(on2);now.replaceWith(now2);
+  const note=document.createElement('div');note.id='autotuneNote';note.className='autotune-note';note.textContent='Needs the spectrum display running.';
+  now2.after(note);
+  on2.addEventListener('click',()=>{a.autotuneEnabled=!a.autotuneEnabled;on2.classList.toggle('autotune-active',a.autotuneEnabled);
+   on2.textContent=a.autotuneEnabled?'AUTOTUNE ON':'AUTOTUNE OFF';
+   say(a.autotuneEnabled?'on. It runs after you stop tuning.':'off.',a.autotuneEnabled?'#36e7a0':'#9baebe');
+   if(a.autotuneEnabled)scan(false);});
+  now2.addEventListener('click',()=>{now2.classList.add('btn-flash');setTimeout(()=>now2.classList.remove('btn-flash'),300);scan(true);});
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0));else install();
+})();
+
+// ── v3.26 Target CW Pitch removed from Audio & DSP; the PC Receiver CW pitch is the one pitch setting ──
+// Older code that still reads app.targetPitch (CW DSP filter centre) follows the PC Receiver CW pitch.
+(()=>{const sync=()=>{const a=window.qmxApp,el=document.getElementById('rxPitch');if(!a||!el)return false;
+  const v=Math.min(1200,Math.max(300,Number(el.value)||700));a.targetPitch=v;return true;};
+ const go=()=>{if(!sync()){setTimeout(go,200);return;}const el=document.getElementById('rxPitch');el.addEventListener('input',sync);el.addEventListener('change',sync);};
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(go,0));else go();})();
 </script>
 
 
