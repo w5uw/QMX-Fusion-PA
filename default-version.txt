@@ -1,0 +1,4 @@
+# QMX Fusion-PA opens the version named below at http://localhost:8737/
+# To change it, type a different QMX-Fusion-Panadapter-vX.YY.html file name and restart the .bat.
+# Delete this file to always open the newest version in the folder.
+QMX-Fusion-Panadapter-v3.23.html
