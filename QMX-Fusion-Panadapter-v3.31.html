@@ -1889,6 +1889,16 @@
 #qmxtab-radio #pcRxPanel .rx-row{display:block;margin:5px 0;font-size:12px}
 #qmxtab-radio #pcRxPanel select{width:100%}
 #qmxtab-radio #pcRxPanel input[type=range]{width:100%}
+/* v3.28 PC Mic box (Radio tab) */
+#qmxtab-radio #pcMicPanel .rx-row{display:block;margin:5px 0;font-size:12px}
+#qmxtab-radio #pcMicPanel select{width:100%}
+#qmxtab-radio #pcMicPanel input[type=range]{width:100%}
+#qmxtab-radio #pcMicPanel .mic-meter{position:relative;height:10px;margin:6px 0 2px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.2);border-radius:3px;overflow:hidden}
+#qmxtab-radio #pcMicPanel #micLevelBar{height:100%;width:0;background:#36e7a0;transition:width .06s linear}
+#qmxtab-radio #pcMicPanel .mic-mark{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.55)}
+#qmxtab-radio #pcMicPanel .mic-level-text{font-size:11px;color:#9baebe;text-align:center}
+#qmxtab-radio #pcMicPanel #micStatus{font-size:12px}
+#qmxtab-radio #pcMicPanel.mic-live>h3{color:#ff4757}
 #qmxtab-radio .rf-lockrow{display:flex;justify-content:flex-end}
 @media(max-width:1500px){#qmxtab-radio .rf-main{grid-template-columns:110px 220px minmax(320px,1fr) 280px}#qmxtab-radio .rf-c5{grid-column:1/-1;flex-direction:row!important;flex-wrap:wrap}#qmxtab-radio .rf-c5>.panel{flex:1 1 260px}}
 @media(max-width:1000px){#qmxtab-radio .rf-main{grid-template-columns:1fr}#qmxtab-radio .rf-c5{flex-direction:column!important}}
@@ -2151,7 +2161,18 @@
 <p id="rxOutDiag" style="font-size:11px;color:#9baebe;margin-top:4px"></p>
 <p id="rxStatus" role="status" style="margin-top:6px">Off.</p>
 <details style="font-size:12px;color:#9baebe"><summary style="cursor:pointer">About the PC Receiver</summary><p>Plays the radio through the PC from the same I/Q stream that draws the spectrum, so both run together. The radio's VOL and RF Gain don't change this sound; use Volume here. Unplug or turn down the radio's earphones if you hear both.</p><p>Output can be any Windows playback device, including a virtual audio cable (for example "CABLE Input") so other programs can use this audio. The list fills in once the panadapter is running; press REFRESH OUTPUT LIST if a device is missing.</p><p>While Listen on PC is ticked, STOP DISPLAY only freezes the spectrum and waterfall; the sound keeps playing. Press START DISPLAY to resume the picture, or untick Listen on PC to stop everything.</p></details>
-</div></div>
+</div><div class="panel rf-fold" data-fold="pcmic" id="pcMicPanel"><h3>PC Mic</h3>
+<label class="rx-row"><input type="checkbox" id="micOn"> Send PC mic on TX (USB/LSB)</label>
+<label class="rx-row">Microphone<select id="micIn" aria-label="PC microphone"><option value="">Looking for microphones…</option></select></label>
+<label class="rx-row">To Radio<select id="micOut" aria-label="QMX playback device"><option value="">Not set</option></select></label>
+<label class="rx-row">Mic Gain <span id="micGainVal">100% (0.0 dB)</span><input id="micGain" type="range" min="0" max="400" value="100"></label>
+<div class="mic-meter" title="Mic level after Mic Gain. Aim for peaks in the green, around -10 to -6 dB."><div id="micLevelBar"></div><span class="mic-mark" style="left:83.3%"></span></div>
+<div id="micLevelText" class="mic-level-text">Level: -- dB</div>
+<button class="btn btn-secondary" id="micRefresh" type="button" style="padding:2px 8px;font-size:11px">REFRESH DEVICE LISTS</button>
+<p id="micStatus" role="status" style="margin-top:6px">Off.</p>
+<details style="font-size:12px;color:#9baebe"><summary style="cursor:pointer">About the PC Mic</summary><p>Lets you talk through a PC microphone or headset. The app sends the mic into the QMX over USB while the radio transmits in USB or LSB, and sends silence the rest of the time.</p><p><b>Microphone:</b> your headset or desk mic. The QMX's own recording device is left out of this list, because that is the radio's receive audio.<br><b>To Radio:</b> the QMX playback device (Windows lists it under Sound settings, Playback, with QMX in its name). It is picked automatically when found.</p><p>Ticking the box sets the radio's SSB audio source to USB (the SS0 command). Unticking it puts back the source the radio had before, such as its own mic jack.</p><p>Press TX (or use the radio's PTT) to talk, RX to listen. Set Mic Gain so your voice peaks in the green part of the meter. The audio is filtered to about 150 to 2,800 Hz and peaks are rounded off before they reach the radio.</p><p>Voice Keyer messages (CW &amp; Voice tab) go into the radio through the To Radio device when you press SEND, and RECORD uses the Microphone chosen here. PLAY only plays a message on the PC speakers.</p></details>
+</div>
+</div>
   <div class="rf-c3"><div class="panel"><h3>Spectrum</h3><canvas id="paSpectrum" width="1000" height="210"></canvas>
 <div class="pa-ctt-row"><label><input type="checkbox" id="paClickTune" checked> Click-to-tune (spectrum &amp; waterfall)</label><span id="paHover">Hover over the spectrum to read frequency</span></div></div><div class="panel"><h3>Waterfall</h3><canvas id="paWaterfall" width="1000" height="270"></canvas><canvas id="paWaterfallAxis" width="1000" height="28" style="border-top:none"></canvas><p id="paScale">No capture yet. Axis will show absolute MHz with the dial marked. Click a signal to tune to it.</p></div></div>
   <div class="rf-c4"><div class="panel" id="bandPanel">
@@ -2559,7 +2580,7 @@
     <!-- Control buttons -->
     <div class="controls-grid" style="margin-bottom: 15px;">
         <button class="btn btn-secondary" id="voiceKeyerRecord">RECORD</button>
-        <button class="btn btn-secondary" id="voiceKeyerPlay" disabled>PLAY</button>
+        <button class="btn btn-secondary" id="voiceKeyerPlay" disabled title="Listen to the message on the PC speakers. Does not transmit.">PLAY</button>
         <button class="btn btn-secondary" id="voiceKeyerStop">STOP</button>
         <button class="btn btn-danger" id="voiceKeyerClear">CLEAR</button>
     </div>
@@ -2575,12 +2596,14 @@
     <button class="btn btn-secondary" id="voiceExportBtn">EXPORT</button>
     <button class="btn btn-secondary" id="voiceImportBtn">IMPORT</button>
     <button class="btn btn-danger" id="voiceClearAllBtn">CLEAR ALL</button>
+    <button class="btn btn-secondary" id="voiceKeyerSend" disabled title="Send the message to the QMX+ (USB or LSB). With Auto TX/RX ticked, the radio transmits for the message and returns to receive.">SEND</button>
     <input type="file" id="voiceImportFile" accept=".json" style="display: none;">
 </div>
 		
     </div>
     
     <!-- Message slots -->
+    <div id="voiceSendStatus" role="status" style="font-size:0.75em;color:#9baebe;text-align:center;margin:-6px 0 8px;min-height:1.2em"></div>
     <div class="voice-message-slots" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px;">
         <button class="btn voice-msg-btn voice-msg-active" data-slot="1">MSG 1</button>
         <button class="btn voice-msg-btn" data-slot="2">MSG 2</button>
@@ -2597,7 +2620,9 @@
         <p>1. Select message slot<br>
         2. Click RECORD and speak<br>
         3. Click STOP when done<br>
-        4. Click PLAY to transmit</p>
+        4. Click PLAY to listen on the PC speakers<br>
+        5. Click SEND to transmit it</p>
+        <p style="color:#9baebe">SEND plays the message into the QMX+ through To Radio in the PC Mic box (Radio tab), in USB or LSB. With Auto TX/RX ticked the radio transmits for the message, then returns to receive. RECORD uses the Microphone chosen in the PC Mic box. Shift+F1 to F8 sends a message.</p>
     </div>
 
 
@@ -4487,13 +4512,13 @@ document.getElementById('vfoSwap').addEventListener('click', async () => {
                     // First, check if the Shift key is pressed for the Voice Keyer
                     if (e.shiftKey) {
                         // --- VOICE KEYER LOGIC (Shift + F-key) ---
-                        this.logCAT(`Shift+F${slotNumber} detected, attempting to play voice message...`, 'info');
+                        this.logCAT(`Shift+F${slotNumber} detected, attempting to send voice message...`, 'info');
                         
                         // Select the appropriate voice message slot
                         this.selectVoiceMessage(slotNumber);
                         
-                        // Immediately play the message from the now-selected slot
-                        this.playVoiceMessage();
+                        // v3.29: Shift+F-key sends (transmits) the message; PLAY only plays it on the PC
+                        (this.sendVoiceMessage||this.playVoiceMessage).call(this);
                         
                     } else {
                         // --- CW KEYER LOGIC (F-key alone) ---
@@ -14585,7 +14610,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.27',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.31',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });
@@ -14849,6 +14874,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const MAX_MS=30000,GRACE_MS=1500;
  const btn=document.getElementById('toneBtn');if(!btn)return;
  let active=false,busy=false,prev=0,startT=0,autoT=null,flashT=null;
+ window.qmxTone={busy:()=>active||busy};
  const app=()=>window.qmxApp;
  const isSSB=()=>/^(USB|LSB)$/i.test(String(app()?.mode||''));
  const wait=ms=>new Promise(r=>setTimeout(r,ms));
@@ -15163,6 +15189,309 @@ document.addEventListener('DOMContentLoaded', () => {
   const v=Math.min(1200,Math.max(300,Number(el.value)||700));a.targetPitch=v;return true;};
  const go=()=>{if(!sync()){setTimeout(go,200);return;}const el=document.getElementById('rxPitch');el.addEventListener('input',sync);el.addEventListener('change',sync);};
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(go,0));else go();})();
+
+// ── v3.28 PC Mic (Radio tab) and Voice Keyer into the radio (v3.29: SEND transmits, PLAY is PC speakers only) ──
+// The QMX+ takes SSB transmit audio from its USB sound card when its SSB source is USB (SS0).
+// This box opens a PC microphone, filters it (about 150-2800 Hz), applies Mic Gain, rounds off
+// peaks, and plays it into the QMX playback device only while the radio transmits in USB/LSB.
+// The rest of the time it sends silence. Voice Keyer messages use the same path.
+(function(){
+ const $=id=>document.getElementById(id);
+ const on=$('micOn'),inSel=$('micIn'),outSel=$('micOut'),gain=$('micGain'),gainVal=$('micGainVal'),
+  bar=$('micLevelBar'),lvlTxt=$('micLevelText'),stat=$('micStatus'),panel=$('pcMicPanel');
+ if(!on||!inSel||!outSel)return;
+ const app=()=>window.qmxApp;
+ const ls=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v;}catch{return d;}};
+ const save=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
+ const wait=ms=>new Promise(r=>setTimeout(r,ms));
+ const isQMX=l=>/qmx/i.test(l||'');
+ const isSSB=()=>/^(USB|LSB)$/i.test(String(app()?.mode||''));
+ const toneBusy=()=>!!(window.qmxTone&&window.qmxTone.busy());
+ const log=(m,t='info')=>{try{app().logCAT('PC Mic: '+m,t);}catch(e){}};
+ const E={ctx:null,sinkId:null,sinkOk:false,el:null,mic:null,micSrc:null,micGate:null,vkIn:null,
+  hp:null,lp:null,lp2:null,gain:null,clip:null,an:null,buf:null,vkActive:false,err:'',prevSS:null,peak:-90,peakT:0,opening:false};
+ window.qmxPcMic=E;
+
+ // ---------- settings ----------
+ on.checked=ls('qmxMicOn','0')==='1';
+ gain.value=ls('qmxMicGain','100');
+ const showGain=()=>{const g=gain.value/100;gainVal.textContent=`${gain.value}% (${g>0?(20*Math.log10(g)).toFixed(1):'-∞'} dB)`;if(E.gain)E.gain.gain.setTargetAtTime(g,E.ctx.currentTime,0.02);};
+ showGain();
+ gain.oninput=()=>{save('qmxMicGain',gain.value);showGain();};
+
+ // ---------- device lists ----------
+ async function fill(){
+  if(!navigator.mediaDevices?.enumerateDevices)return;
+  let ds=[];try{ds=await navigator.mediaDevices.enumerateDevices();}catch(e){return;}
+  const real=d=>d.deviceId&&!['default','communications'].includes(d.deviceId);
+  const ins=ds.filter(d=>d.kind==='audioinput'&&real(d)&&!isQMX(d.label));
+  const outs=ds.filter(d=>d.kind==='audiooutput'&&real(d));
+  const named=ds.some(d=>d.kind==='audioinput'&&d.label);
+  // microphones
+  const sIn=ls('qmxMicIn',''),sInL=ls('qmxMicInLabel','');let cur=inSel.value||sIn;
+  if(cur&&!ins.some(d=>d.deviceId===cur)){const m=ins.find(d=>d.label&&d.label===sInL);cur=m?m.deviceId:'';}
+  inSel.replaceChildren();
+  if(!ins.length)inSel.add(new Option(named?'No microphone found (plug one in, then REFRESH)':'Microphone names hidden: press REFRESH DEVICE LISTS',''));
+  ins.forEach((d,i)=>inSel.add(new Option(d.label||`Microphone ${i+1}`,d.deviceId)));
+  if(!cur&&ins.length)cur=ins[0].deviceId;
+  inSel.value=cur||'';
+  // QMX playback device
+  const sOut=ls('qmxMicOut',''),sOutL=ls('qmxMicOutLabel','');let co=outSel.value||sOut;
+  if(co&&!outs.some(d=>d.deviceId===co)){const m=outs.find(d=>d.label&&d.label===sOutL);co=m?m.deviceId:'';}
+  if(!co){const q=outs.find(d=>isQMX(d.label));if(q)co=q.deviceId;}
+  outSel.replaceChildren(new Option('Not set',''));
+  outs.forEach((d,i)=>outSel.add(new Option(d.label||`Playback device ${i+1}`,d.deviceId)));
+  outSel.value=co||'';
+  if(inSel.value!==sIn)saveIn();
+  if(outSel.value!==sOut)saveOut();
+ }
+ const saveIn=()=>{save('qmxMicIn',inSel.value);save('qmxMicInLabel',inSel.value?inSel.selectedOptions[0]?.text||'':'');};
+ const saveOut=()=>{save('qmxMicOut',outSel.value);save('qmxMicOutLabel',outSel.value?outSel.selectedOptions[0]?.text||'':'');};
+ $('micRefresh').onclick=async()=>{let s=null;try{s=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){E.err='Audio access blocked: click the microphone icon in the address bar, choose Allow, then REFRESH.';}
+  await fill();s?.getTracks().forEach(t=>t.stop());paint();};
+ navigator.mediaDevices?.addEventListener?.('devicechange',()=>fill());
+ inSel.onchange=async()=>{saveIn();if(on.checked){closeMic();await openMic();}paint();};
+ outSel.onchange=async()=>{saveOut();E.sinkOk=false;if(E.ctx)await setSink();paint();};
+
+ // ---------- audio engine ----------
+ function build(){
+  if(E.ctx)return;
+  const C=window.AudioContext||window.webkitAudioContext;
+  const ctx=E.ctx=new C({latencyHint:'interactive',sampleRate:48000});
+  E.micGate=ctx.createGain();E.micGate.gain.value=0;
+  E.vkIn=ctx.createGain();
+  E.hp=ctx.createBiquadFilter();E.hp.type='highpass';E.hp.frequency.value=150;E.hp.Q.value=0.707;
+  E.lp=ctx.createBiquadFilter();E.lp.type='lowpass';E.lp.frequency.value=2800;E.lp.Q.value=0.707;
+  E.lp2=ctx.createBiquadFilter();E.lp2.type='lowpass';E.lp2.frequency.value=2800;E.lp2.Q.value=0.707;
+  E.gain=ctx.createGain();E.gain.gain.value=gain.value/100;
+  E.clip=ctx.createWaveShaper();E.clip.oversample='2x';
+  const n=2048,c=new Float32Array(n),K=0.7,M=0.95;   // straight line up to 0.7, then rounded off below 0.95
+  for(let i=0;i<n;i++){const x=i/(n-1)*2-1,a=Math.abs(x);c[i]=Math.sign(x)*(a<=K?a:K+(M-K)*Math.tanh((a-K)/(M-K)));}
+  E.clip.curve=c;
+  E.an=ctx.createAnalyser();E.an.fftSize=1024;E.buf=new Float32Array(E.an.fftSize);
+  E.micGate.connect(E.hp);E.hp.connect(E.lp);E.lp.connect(E.lp2);E.lp2.connect(E.gain);
+  // v3.31: Voice Keyer messages are levelled on SEND, so they skip Mic Gain
+  E.vHp=ctx.createBiquadFilter();E.vHp.type='highpass';E.vHp.frequency.value=150;E.vHp.Q.value=0.707;
+  E.vLp=ctx.createBiquadFilter();E.vLp.type='lowpass';E.vLp.frequency.value=2800;E.vLp.Q.value=0.707;
+  E.vkIn.connect(E.vHp);E.vHp.connect(E.vLp);E.vLp.connect(E.clip);
+  E.gain.connect(E.clip);E.clip.connect(E.an);
+  // meter tap before the gate so Mic Gain can be set while receiving
+  E.meterSrc=null;
+ }
+ async function setSink(){
+  const id=outSel.value;E.sinkId=id;E.sinkOk=false;
+  if(!id){E.err='';return false;}
+  const ctx=E.ctx;
+  try{
+   if(ctx.setSinkId){await ctx.setSinkId(id);E.clip.connect(ctx.destination);}
+   else{ // older Chrome: play through a hidden <audio> element that can choose its output
+    if(!E.dest){E.dest=ctx.createMediaStreamDestination();E.clip.connect(E.dest);}
+    E.el=E.el||new Audio();E.el.srcObject=E.dest.stream;
+    if(!E.el.setSinkId)throw Object.assign(Error('this browser cannot choose an output'),{name:'NotSupportedError'});
+    await E.el.setSinkId(id);await E.el.play().catch(()=>{});
+   }
+   if(ctx.state!=='running')await ctx.resume().catch(()=>{});
+   E.sinkOk=true;E.err='';return true;
+  }catch(e){E.err=`Could not open "${outSel.selectedOptions[0]?.text||'To Radio'}" (${e.name||e.message}).`;log(E.err,'error');return false;}
+ }
+ async function ensureOut(){
+  if(!outSel.value){await fill();}
+  if(!outSel.value){E.err='Choose the QMX in To Radio.';return false;}
+  build();
+  if(!E.sinkOk||E.sinkId!==outSel.value){if(!await setSink())return false;}
+  if(E.ctx.state!=='running')await E.ctx.resume().catch(()=>{});
+  return true;
+ }
+ async function openMic(){
+  if(E.mic||E.opening)return true;E.opening=true;
+  try{
+   if(!await ensureOut())return false;
+   if(!inSel.value)await fill();
+   if(!inSel.value){E.err='No microphone selected.';return false;}
+   E.mic=await navigator.mediaDevices.getUserMedia({audio:{deviceId:{exact:inSel.value},echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1,sampleRate:48000}});
+   E.micSrc=E.ctx.createMediaStreamSource(E.mic);E.micSrc.connect(E.micGate);
+   // meter: mic path without the gate
+   E.meterSrc=E.ctx.createGain();E.micSrc.connect(E.meterSrc);
+   E.mHp=E.ctx.createBiquadFilter();E.mHp.type='highpass';E.mHp.frequency.value=150;
+   E.mGain=E.ctx.createGain();E.mGain.gain.value=1;
+   E.meterSrc.connect(E.mHp);E.mHp.connect(E.mGain);E.mGain.connect(E.an);
+   E.mic.getAudioTracks()[0]?.addEventListener('ended',()=>{E.err='The microphone was unplugged or turned off.';closeMic();paint();});
+   E.err='';log(`microphone "${inSel.selectedOptions[0]?.text}" open, sending to "${outSel.selectedOptions[0]?.text}"`);
+   return true;
+  }catch(e){E.err=e.name==='NotAllowedError'?'Microphone access blocked: click the microphone icon in the address bar, choose Allow.':`Could not open the microphone (${e.name||e.message}).`;log(E.err,'error');return false;}
+  finally{E.opening=false;}
+ }
+ function closeMic(){
+  try{E.micSrc?.disconnect();E.meterSrc?.disconnect();E.mHp?.disconnect();E.mGain?.disconnect();}catch(e){}
+  E.mic?.getTracks().forEach(t=>t.stop());E.mic=null;E.micSrc=null;E.meterSrc=null;
+  if(E.micGate)E.micGate.gain.value=0;
+ }
+ // meter gain follows Mic Gain (the analyser sits after E.gain for the gated path; the meter path adds its own copy)
+ const meterGain=()=>{if(E.mGain)E.mGain.gain.value=(lastLive||E.vkActive)?0:gain.value/100;};
+
+ // ---------- radio SSB source ----------
+ async function readSS(a){a.ssbMicSource=undefined;await a.sendCommand('SS');for(let i=0;i<10&&a.ssbMicSource===undefined;i++)await wait(50);return a.ssbMicSource;}
+ async function useUSB(){
+  const a=app();if(!a?.connected||toneBusy())return;
+  try{const cur=await readSS(a);
+   if(cur!==undefined&&cur!==0&&cur!==1){E.prevSS=cur;save('qmxMicPrevSS',String(cur));}
+   if(cur!==0){await a.sendCommand('SS0');a.ssbMicSource=0;log('radio SSB source set to USB audio (SS0)');}
+  }catch(e){}
+ }
+ async function restoreSS(){
+  const a=app();const p=E.prevSS??(ls('qmxMicPrevSS','')===''?null:+ls('qmxMicPrevSS',''));
+  if(!a?.connected||p===null||p===0||toneBusy())return;
+  try{await a.sendCommand('SS'+p);a.ssbMicSource=p;log(`radio SSB source put back to ${p===2?'its mic jack':'source '+p} (SS${p})`);}catch(e){}
+  E.prevSS=null;save('qmxMicPrevSS','');
+ }
+
+ on.onchange=async()=>{save('qmxMicOn',on.checked?'1':'0');
+  if(on.checked){await fill();await openMic();await useUSB();}
+  else{closeMic();await restoreSS();}
+  paint();};
+
+ // ---------- TX gate ----------
+ let lastLive=false;
+ function update(){
+  const a=app();
+  const live=!!(on.checked&&E.mic&&a?.connected&&a.transmitting&&isSSB()&&!toneBusy()&&!E.vkActive&&E.sinkOk);
+  if(E.micGate&&live!==lastLive){const t=E.ctx.currentTime;E.micGate.gain.cancelScheduledValues(t);E.micGate.gain.setTargetAtTime(live?1:0,t,0.008);}
+  lastLive=live;meterGain();panel.classList.toggle('mic-live',live);
+  return live;
+ }
+ E.update=update;
+
+ // ---------- level meter ----------
+ function meter(){
+  let db=-90;
+  if(E.an&&(E.mic||E.vkActive)){E.an.getFloatTimeDomainData(E.buf);let p=0;for(let i=0;i<E.buf.length;i++){const v=Math.abs(E.buf[i]);if(v>p)p=v;}db=p>0?20*Math.log10(p):-90;}
+  const now=performance.now();if(db>=E.peak||now-E.peakT>1200){E.peak=db;E.peakT=now;}
+  E.disp=Math.max(db,(E.disp??-90)-0.8);   // bar jumps up, falls back smoothly
+  const pct=Math.max(0,Math.min(100,(E.disp+60)/60*100));
+  bar.style.width=pct+'%';bar.style.background=E.disp>-3?'#ff4757':E.disp>-8?'#ffc857':'#36e7a0';
+  lvlTxt.textContent=(E.mic||E.vkActive)?`Level: ${E.peak<=-60?'below -60':E.peak.toFixed(0)} dB peak`:'Level: -- dB';
+  requestAnimationFrame(meter);
+ }
+ requestAnimationFrame(meter);
+
+ // ---------- status ----------
+ let lastTxt='';
+ function paint(){
+  const a=app();const live=update();let t,c='#9baebe';
+  if(E.err){t=E.err;c='#ff6b6b';}
+  else if(E.vkActive){t='Playing a Voice Keyer message into the radio.';c='#ff4757';}
+  else if(!on.checked){t='Off. Tick "Send PC mic on TX" to talk through a PC microphone.';}
+  else if(!E.mic){t='Opening the microphone…';}
+  else if(E.ctx&&E.ctx.state==='suspended'){t='Mic ready. Click anywhere on the page to wake up the audio.';c='#ffc857';}
+  else if(!a?.connected){t='Mic ready. Connect the radio.';c='#ffc857';}
+  else if(live){t='Sending your mic to the radio (transmitting).';c='#ff4757';}
+  else if(toneBusy()){t='TONE is transmitting; the mic is paused.';c='#ffc857';}
+  else if(!isSSB()){t=`Mic ready, but the radio is in ${String(a.mode||'?').toUpperCase()}. The PC mic only transmits in USB or LSB.`;c='#ffc857';}
+  else if(a.transmitting){t='Transmitting, waiting for the To Radio device.';c='#ffc857';}
+  else{t='Ready. Press TX to talk, RX to listen.';c='#36e7a0';}
+  if(t!==lastTxt){stat.textContent=t;stat.style.color=c;lastTxt=t;}
+ }
+ let wasConn=false;
+ setInterval(()=>{const a=app();if(!a)return;
+  if(a.connected&&!wasConn&&on.checked)setTimeout(useUSB,2500);   // after the app's own start-up commands
+  wasConn=!!a.connected;paint();},100);
+
+ // ---------- hooks into the app ----------
+ const hook=()=>{const a=app();if(!a){setTimeout(hook,200);return;}
+  // TX: when the PC mic or a Voice Keyer message needs USB audio, make sure the SSB source is USB first.
+  const oSend=a.sendCommand.bind(a);
+  a.sendCommand=async function(cmd){
+   if(cmd==='TX'&&this.connected&&isSSB()&&!toneBusy()&&((on.checked&&E.mic)||E.vkActive)){
+    await oSend('SS0');this.ssbMicSource=0;}
+   return oSend(cmd);};
+  const oT=a.updateTXStatus.bind(a);
+  a.updateTXStatus=function(){const r=oT.apply(a,arguments);update();return r;};
+
+  // Voice Keyer RECORD uses the PC Mic microphone (the old Audio Stream Input list was removed in v3.20).
+  const oRec=a.startVoiceRecording.bind(a);
+  a.startVoiceRecording=async function(){
+   if(!inSel.value)await fill();
+   if(inSel.value)this.selectedInputDevice=inSel.value;
+   else{this.logCAT('Voice Keyer: no microphone found. Pick one in the PC Mic box on the Radio tab.','error');return;}
+   return oRec();};
+
+  // v3.29 Voice Keyer SEND: into the QMX+ through To Radio (USB/LSB). Auto TX/RX keys the radio
+  // for the message and returns to receive; without it the audio goes to the radio and you press TX.
+  const vkBtns=()=>{const vk=a.voiceKeyer,has=vk.messages[vk.currentSlot-1]!=null,busy=vk.isRecording||vk.isPlaying;
+   const p=$('voiceKeyerPlay'),sd=$('voiceKeyerSend');
+   if(p){p.disabled=!has||vk.isRecording||(vk.isPlaying&&!E.pvActive);p.textContent=E.pvActive?'PLAYING...':'PLAY';p.classList.toggle('btn-primary',!!E.pvActive);}
+   if(sd){sd.disabled=!has||vk.isRecording||(vk.isPlaying&&!E.vkActive);sd.textContent=E.vkActive?'SENDING...':'SEND';
+    sd.classList.toggle('btn-danger',!!E.vkActive);sd.classList.toggle('btn-secondary',!E.vkActive);}};
+  const vkSay=(t,c)=>{const el=$('voiceSendStatus');if(el){el.textContent=t;el.style.color=c||'#9baebe';}};
+  const oUI=a.updateVoiceKeyerUI.bind(a);
+  a.updateVoiceKeyerUI=function(){const r=oUI.apply(a,arguments);try{vkBtns();}catch(e){}return r;};
+  $('voiceKeyerSend')?.addEventListener('click',()=>a.sendVoiceMessage());
+  a.sendVoiceMessage=async function(){
+   const vk=this.voiceKeyer;
+   const msg=vk.messages[vk.currentSlot-1];
+   if(!msg){this.logCAT(`Message slot ${vk.currentSlot} is empty`,'error');return;}
+   if(vk.isPlaying){this.logCAT('Already playing a message','error');return;}
+   if(!this.connected){this.logCAT('Voice Keyer: connect the radio first','error');vkSay('Connect the radio first.','#ffc857');return;}
+   if(!isSSB()){this.logCAT('Voice Keyer: switch the radio to USB or LSB first','error');vkSay('SEND works in USB or LSB only.','#ffc857');return;}
+   if(!await ensureOut()){const m=E.err||'Choose the QMX in To Radio (PC Mic box, Radio tab).';this.logCAT('Voice Keyer: '+m,'error');vkSay(m,'#ff6b6b');paint();return;}
+   let buf;
+   try{buf=await E.ctx.decodeAudioData(await msg.blob.arrayBuffer());}
+   catch(e){this.logCAT(`Voice Keyer: could not read message ${vk.currentSlot} (${e.message})`,'error');return;}
+   // v3.31: level the message so its loudest peak sits at about -3 dB (the QMX expects USB audio near full scale)
+   let pk=0;for(let ch=0;ch<buf.numberOfChannels;ch++){const d=buf.getChannelData(ch);for(let i=0;i<d.length;i++){const v=Math.abs(d[i]);if(v>pk)pk=v;}}
+   if(pk<1e-4){this.logCAT(`Voice Keyer: message ${vk.currentSlot} is silent; record it again`,'error');vkSay(`MSG ${vk.currentSlot} is silent. Record it again.`,'#ff6b6b');return;}
+   const lev=Math.min(0.7/pk,31.6),pkDb=20*Math.log10(pk),devName=outSel.selectedOptions[0]?.text||'To Radio';
+   try{
+    E.vkActive=true;update();vk.isPlaying=true;
+    if(E.ctx.state!=='running')await E.ctx.resume().catch(()=>{});
+    // the SSB source is set to USB on every SEND, as the mic does
+    await this.sendCommand('SS0');this.ssbMicSource=0;
+    if(vk.autoTransmit&&!this.transmitting){await this.sendCommand('TX');this.transmitting=true;this.updateTXStatus();await wait(200);}
+    else if(!this.transmitting)this.logCAT('Voice Keyer: Auto TX/RX is off, press TX to put the message on the air','info');
+    const vg=E.ctx.createGain();vg.gain.value=lev;
+    const src=E.ctx.createBufferSource();src.buffer=buf;src.connect(vg);vg.connect(E.vkIn);
+    vk.playbackNode=src;
+    src.onended=()=>{try{vg.disconnect();}catch(e){}E.vkActive=false;update();paint();vkSay(`Last SEND: MSG ${vk.currentSlot} to ${devName}, peak ${pkDb.toFixed(0)} dB raised to -3 dB.`,'#9baebe');if(vk.playbackNode===src)this.voiceKeyerPlaybackEnded();else this.updateVoiceKeyerUI();};
+    src.start(0);this.updateVoiceKeyerUI();paint();
+    vkSay(`Sending MSG ${vk.currentSlot} to ${devName}…`,'#ff4757');
+    this.logCAT(`Voice Keyer: sending message ${vk.currentSlot} to "${devName}" (${buf.duration.toFixed(1)} s, recorded peak ${pkDb.toFixed(1)} dB, raised ${(20*Math.log10(lev)).toFixed(1)} dB to -3 dB)`,'info');
+   }catch(e){E.vkActive=false;update();vkSay('SEND failed: '+e.message,'#ff6b6b');this.logCAT(`Send error: ${e.message}`,'error');this.voiceKeyerPlaybackEnded();}
+  };
+  // v3.29 Voice Keyer PLAY: PC speakers only (Windows default output). Never transmits
+  // and leaves the radio's volume alone, so you can check a recording before sending it.
+  a.playVoiceMessage=async function(){
+   const vk=this.voiceKeyer;
+   const msg=vk.messages[vk.currentSlot-1];
+   if(!msg){this.logCAT(`Message slot ${vk.currentSlot} is empty`,'error');return;}
+   if(vk.isPlaying){this.logCAT('Already playing a message','error');return;}
+   try{
+    const C=window.AudioContext||window.webkitAudioContext;
+    E.pv=E.pv||new C();if(E.pv.state!=='running')await E.pv.resume().catch(()=>{});
+    const buf=await E.pv.decodeAudioData(await msg.blob.arrayBuffer());
+    const src=E.pv.createBufferSource();src.buffer=buf;src.connect(E.pv.destination);
+    vk.playbackNode=src;vk.isPlaying=true;E.pvActive=true;
+    src.onended=()=>{E.pvActive=false;if(vk.playbackNode===src){vk.isPlaying=false;vk.playbackNode=null;}this.updateVoiceKeyerUI();};
+    src.start(0);this.updateVoiceKeyerUI();
+    this.logCAT(`Voice Keyer: playing message ${vk.currentSlot} on the PC speakers (${buf.duration.toFixed(1)} s, not transmitted)`,'info');
+   }catch(e){E.pvActive=false;vk.isPlaying=false;vk.playbackNode=null;this.updateVoiceKeyerUI();this.logCAT(`Playback error: ${e.message}`,'error');}
+  };
+  // STOP during a PC-speaker PLAY: stop the sound without touching TX/RX or the radio volume
+  const oStop=a.stopVoiceKeyer.bind(a);
+  a.stopVoiceKeyer=function(){
+   const vk=this.voiceKeyer;
+   if(E.pvActive&&vk.playbackNode){const n=vk.playbackNode;vk.playbackNode=null;vk.isPlaying=false;E.pvActive=false;try{n.stop();}catch(e){}this.updateVoiceKeyerUI();this.logCAT('Playback stopped','info');if(!vk.isRecording)return;}
+   return oStop();};
+  a.updateVoiceKeyerUI();
+ };hook();
+
+ // Chrome starts audio only after a click on the page; TX or any click wakes it up.
+ document.addEventListener('pointerdown',()=>{if(E.ctx&&E.ctx.state==='suspended')E.ctx.resume().catch(()=>{});
+  else if(!E.ctx&&outSel.value)ensureOut().then(()=>paint());},true);   // v3.31: To Radio stream runs from the first click, so the QMX already has USB audio before any TX
+ window.addEventListener('pagehide',()=>{closeMic();});
+ fill().then(async()=>{if(on.checked){await openMic();}paint();});
+ paint();
+})();
+
 </script>
 
 

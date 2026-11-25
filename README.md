@@ -2,7 +2,7 @@
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.27**
+Current version: **v3.31**
 
 ## Features
 
@@ -11,6 +11,7 @@ Current version: **v3.27**
 - **PC Receiver**: plays the radio's audio through the PC in USB, LSB, CW and AM, with filters, AGC, Auto Notch and SSB filter presets.
 - **Meters**: needle meters for signal, SWR and power. The power meter holds its peak for 2 seconds.
 - **Power knob**: sets the radio's Max. PA voltage in 0.1 V steps to lower transmit power. After each change the app brings the audio stream back.
+- **PC Mic**: talk through a PC microphone or headset. The app sends the mic into the QMX over USB while the radio transmits in USB or LSB, with Mic Gain and a level meter. The Voice Keyer's SEND button transmits recorded messages the same way.
 - **TONE button**: sends the radio's built-in 700 + 1900 Hz two-tone test in USB or LSB. It stops by itself after 30 seconds.
 - **Clock**: shows local and UTC time side by side, set from internet time services. The local time zone can be chosen, and the QMX clock can be set to local or UTC time.
 - **Auto Tune**: reads the panadapter spectrum and retunes onto the strongest nearby signal. In CW it puts the carrier on the dial; in USB and LSB it centres the voice 1500 Hz from the dial. Needs the spectrum display running.
@@ -35,11 +36,39 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.27.html` | The app |
+| `QMX-Fusion-Panadapter-v3.31.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
 | `README.txt` | Setup notes |
+
+## Changes in v3.31
+- Voice Keyer SEND fix: the radio keyed but no audio reached the transmitter.
+  - SEND no longer turns the radio's volume to 0 while it transmits.
+  - SEND always sets the SSB source to USB audio (SS0) before keying, the same way the PC Mic does.
+  - The To Radio audio stream now starts on your first click, so the QMX already has a steady USB audio signal before any TX.
+  - Every message is levelled on SEND so its loudest peak reaches the radio at about -3 dB. Quiet recordings get up to +30 dB of gain, and Mic Gain no longer affects messages.
+  - The delay between TX and the start of audio is now 200 ms.
+  - A status line above the MSG slots shows which device the message went to and how much it was raised. The same details go to the CAT log.
+
+## Changes in v3.30
+
+- Voice Keyer: the SEND button moved under IMPORT, just above the message slots. The top buttons are now RECORD, PLAY, STOP and CLEAR.
+
+## Changes in v3.29
+
+- Voice Keyer (CW & Voice tab): new SEND button sends the recorded message into the QMX+ through To Radio (PC Mic box), in USB or LSB. With Auto TX/RX ticked the radio transmits for the message, then returns to receive.
+- PLAY now only plays the message on the PC speakers so you can check the recording. It never transmits and doesn't change the radio's volume.
+- STOP stops either one. Shift+F1 to F8 sends a message, the same as SEND.
+
+## Changes in v3.28
+
+- New PC Mic box on the Radio tab (under PC Receiver). Pick a Microphone and the To Radio device (the QMX playback device, picked automatically), then tick "Send PC mic on TX".
+- While the radio transmits in USB or LSB, the mic goes into the QMX over USB. The rest of the time the app sends silence. TX, RX and the radio's own PTT all work.
+- Ticking the box sets the radio's SSB audio source to USB (SS0). Unticking it puts back the source the radio had before, such as its mic jack.
+- Mic Gain slider (0 to 400%) and a level meter. The audio is filtered to about 150 to 2,800 Hz, and peaks are rounded off before they reach the radio.
+- The mic pauses while TONE is transmitting, and in CW, AM and DIGI.
+- Voice Keyer (CW & Voice tab): PLAY now sends the message into the radio through To Radio, in USB or LSB only. RECORD uses the PC Mic microphone. With Auto TX/RX unticked, PLAY plays the message on the PC speakers so you can listen to it.
 
 ## Changes in v3.27
 

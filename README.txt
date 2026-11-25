@@ -17,6 +17,9 @@ FIRST TIME
    FILE, pick the file from step 2, click OK. The page reloads.
 5. Connect the radio (Chrome asks for the COM port and microphone again once).
 6. Radio tab > PC Receiver (click the title to open it) > Output: pick your cable (e.g. CABLE Input).
+7. To talk through a PC microphone: Radio tab > PC Mic (click the title to open it).
+   Pick your Microphone, check To Radio shows the QMX, tick "Send PC mic on TX",
+   then press TX in USB or LSB. Set Mic Gain so the meter peaks in the green.
 
 EVERY DAY
 Double-click "Start QMX Fusion.bat". Close the black window when finished.
@@ -24,7 +27,7 @@ Tip: right-click the .bat > Send to > Desktop (create shortcut).
 
 DEFAULT VERSION
 http://localhost:8737/ opens the version named in default-version.txt
-(now QMX-Fusion-Panadapter-v3.27.html). To change it, open default-version.txt
+(now QMX-Fusion-Panadapter-v3.31.html). To change it, open default-version.txt
 in Notepad, type the other file name, save, and restart the .bat.
 Delete default-version.txt to always open the newest version instead.
 
