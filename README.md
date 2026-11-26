@@ -1,4 +1,5 @@
 # QMX-Fusion-PA
+https://github.com/w5uw/QMX-Fusion-PA/blob/main/Fusion-PA%203.36.jpg
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
