@@ -14,7 +14,7 @@ Current version: **v3.36**
 - **PC Mic**: a TX Audio switch picks HAND MIC (the mic plugged into the radio, with a Hand Mic Gain slider) or PC MIC. With PC MIC you talk through a PC microphone or headset. The app sends the mic into the QMX over USB while the radio transmits in USB or LSB, with Mic Gain and a level meter. The Voice Keyer's SEND button transmits recorded messages the same way.
 - **TONE button**: sends the radio's built-in 700 + 1900 Hz two-tone test in USB or LSB. It stops by itself after 30 seconds.
 - **Clock**: shows local and UTC time side by side, set from internet time services. The local time zone can be chosen, and the QMX clock can be set to local or UTC time.
-- **Auto Tune**: reads the panadapter spectrum and retunes onto the strongest nearby signal. In CW it puts the carrier on the dial; in USB and LSB it centres the voice 1500 Hz from the dial. Needs the spectrum display running.
+- **Auto Tune**: reads the panadapter spectrum and retunes onto the strongest nearby signal in CW and puts the 700 Hz carrier on the dial.
 
 ## Requirements
 
