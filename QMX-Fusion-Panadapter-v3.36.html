@@ -4240,8 +4240,8 @@ parseFrequencyInput(input, format) {
                 await this.sendCommand('AG0');
                 await this.sendCommand('KS');
                 await this.sendCommand('SM');
-                await this.sendCommand('SW');
                 await this.sendCommand('PC');
+                await this.sendCommand('SW');
 				await this.sendCommand('RT');   // Get RIT status
                 await this.sendCommand('RC');   // Clear RIT initially
 				this.sendTimeToQMX();
@@ -7231,10 +7231,10 @@ continueTuningAdjust(e) {
                         await this.sendCommand('IF');
                         await this.sendCommand('LC');
                         await this.sendCommand('SM');
+                        await this.sendCommand('PC');   // v3.36: PC right before SW, so each SWR reading is paired with power from the same moment
                         await this.sendCommand('SW');
                         await this.sendCommand('KS');
 						await this.sendCommand('AG0');
-						await this.sendCommand('PC');
 						await this.sendCommand('RT');  // Poll RIT status
                     }
 					
@@ -14612,7 +14612,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.34',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.36',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });
@@ -14765,7 +14765,29 @@ document.addEventListener('DOMContentLoaded', () => {
    else if(autoOnTx&&!rxTimer){rxTimer=setTimeout(()=>{rxTimer=null;if(!txNow()){autoOnTx=false;show('s');}},RX_HANG_MS);}}
   const oT=app.updateTXStatus&&app.updateTXStatus.bind(app);
   app.updateTXStatus=function(){let r;try{r=oT&&oT.apply(app,arguments);}catch(e){}autoTx();return r;};
-  app.updateSWRMeter=function(v){try{oW&&oW(v);}catch(e){}swrVal=+v||0;W.set(swrVal>0?swrPos(swrVal):0);};
+  // v3.35: steady SWR needle. The QMX SW reply is a single instant reading; with little or no RF going out
+  // (CW key-up, SSB pauses, the first moments of transmit) it is mostly noise.
+  // v3.36: the radio's SWR reads high at low power, and speech spends most of its time well below its peaks,
+  // so SSB voice read higher than the steady two-tone. A reading now counts only when the power read just
+  // before it (PC is polled right before SW) is at least 0.5 W and at least 60% of the peak power in the
+  // last 3 seconds - the loud parts of speech, where the measurement is as good as on the two-tone.
+  // The needle and readout show the middle (median) of the last 7 counted readings and hold it between them.
+  const SWR_N=7,SWR_MINW=0.5,SWR_FRAC=0.6,SWR_PK_MS=3000;
+  let swrBuf=[],prevW=0,pkPw=0,pkPwT=0,swrShown=0;
+  const swrTextEl=document.getElementById('swrText'),quickSWREl=document.getElementById('quickSWR');
+  const oPW=app.updatePowerMeter;
+  app.updatePowerMeter=function(t){const w=Math.max(0,(parseFloat(t)||0)/10),now=Date.now();
+   if(w>=pkPw||now-pkPwT>SWR_PK_MS){pkPw=w;pkPwT=now;}
+   prevW=liveW;return oPW.apply(app,arguments);};   // prevW = the reading before this one
+  app.updateSWRMeter=function(v){try{oW&&oW(v);}catch(e){}v=+v||0;
+   if(v<=0){swrBuf=[];swrShown=0;swrVal=0;W.set(0);if(swrTextEl)swrTextEl.textContent='RX';if(quickSWREl)quickSWREl.textContent='RX';return;}
+   const need=Math.max(SWR_MINW,pkPw*SWR_FRAC);
+   if(liveW>=need&&v>=1&&v<100){swrBuf.push(v);if(swrBuf.length>SWR_N)swrBuf.shift();
+    const srt=[...swrBuf].sort((a,b)=>a-b);swrShown=srt[srt.length>>1];}
+   swrVal=swrShown;W.set(swrShown>0?swrPos(swrShown):0);
+   const txt=swrShown>0?swrShown.toFixed(1):'--';
+   if(swrTextEl)swrTextEl.textContent=swrShown>0?txt+':1':'--';if(quickSWREl)quickSWREl.textContent=txt;
+   app.currentSWR=swrShown;};
  };
  hook();
 })();

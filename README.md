@@ -2,7 +2,7 @@
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.34**
+Current version: **v3.36**
 
 ## Features
 
@@ -36,11 +36,24 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.34.html` | The app |
+| `QMX-Fusion-Panadapter-v3.36.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
 | `README.txt` | Setup notes |
+
+## Changes in v3.36
+- SWR on SSB voice now matches the two-tone test. The radio's SWR reading runs high at low power, and speech spends most of its time well below its peaks, so voice read higher than the steady two-tone into the same dummy load.
+  - The power reading is now requested right before each SWR reading (it used to come about 80 ms later), so each SWR reading is checked against the power at that moment.
+  - A reading counts only when that power is at least 0.5 W and at least 60% of the peak power in the last 3 seconds.
+- Not yet confirmed on the QMX+.
+
+## Changes in v3.35
+- Steadier SWR meter while transmitting. The radio's SWR reading is a single instant value, and with little or no RF going out (CW key-up, pauses in speech, the start of a transmission) it jumps around even into a dummy load.
+  - A reading now counts only when the last two power readings are both at least 0.2 W and at least 25% of the recent peak power.
+  - The needle and readout show the median of the last 7 counted readings, rounded to 0.1, and hold that value through pauses.
+  - Readings above 99:1 are ignored. The meter still shows RX on receive.
+- Not yet confirmed on the QMX+.
 
 ## Changes in v3.34
 - Space bar TX/RX with PC MIC chosen: press once to transmit, again to receive. Esc always returns to receive.
