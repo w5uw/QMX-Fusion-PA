@@ -2,7 +2,7 @@
 ![QMX Fusion-PA v3.37](Fusion-PA%203.37.png)
 QMX Fusion-PA v3.37 on the QMX+: 60m channel 4 (5403.5 kHz) in DIGI, with the CH1 to CH4 channel lines on the spectrum.
 
-QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
+QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul - DJ0CU/G4ADF this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
 Current version: **v3.37**
 
