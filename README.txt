@@ -27,7 +27,7 @@ Tip: right-click the .bat > Send to > Desktop (create shortcut).
 
 DEFAULT VERSION
 http://localhost:8737/ opens the version named in default-version.txt
-(now QMX-Fusion-Panadapter-v3.36.html). To change it, open default-version.txt
+(now QMX-Fusion-Panadapter-v3.37.html). To change it, open default-version.txt
 in Notepad, type the other file name, save, and restart the .bat.
 Delete default-version.txt to always open the newest version instead.
 
@@ -36,6 +36,27 @@ Drop the new QMX-Fusion-Panadapter-vX.YY.html into this folder; your settings
 carry over. While a default is pinned, try the newest one at
 http://localhost:8737/latest . Any version stays usable at
 http://localhost:8737/QMX-Fusion-Panadapter-vX.YY.html
+
+NETWORK (QMX+ PLUGGED INTO ANOTHER PC ON YOUR WI-FI)
+On the PC with the QMX+:
+1. Install Python 3 (python.org), tick "Add python.exe to PATH".
+2. Copy this folder over and double-click "Start QMX Network Bridge.bat".
+   The first time it installs the packages it needs.
+3. If Windows Firewall asks: tick Private networks, click Allow.
+4. Note the IP address the window shows. Leave the window open.
+On the PC you operate from:
+1. Settings tab > Network Settings (click the title to open it):
+   type that IP address. Ports stay
+   50001 (data) and 50002 (audio) unless you changed them in the bridge.
+2. TEST CONNECTION, then Radio tab > Serial > CONNECT NETWORK.
+"Test QMX Network Bridge (no radio).bat" uses a pretend radio to check the link.
+To choose another COM port or sound device: py -3 qmx_network_bridge.py --choose
+
+60M
+The 60m button tunes channel 1 (5330.5 kHz) in DIGI. Click the magenta lines on
+the spectrum to change channel. On the radio set:
+Menu > System config > Band limits > None
+(with ITU Region 2 the radio may refuse the 60m carrier frequencies).
 
 ONLY ONE SERVER AT A TIME
 Only one QMX Fusion-PA server can use http://localhost:8737 at a time. From v3.10,

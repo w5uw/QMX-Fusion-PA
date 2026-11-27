@@ -3,7 +3,7 @@ https://github.com/w5uw/QMX-Fusion-PA/blob/main/Fusion-PA%203.36.jpg
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul Harrison/Sparks72 this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.36**
+Current version: **v3.37**
 
 ## Features
 
@@ -15,6 +15,8 @@ Current version: **v3.36**
 - **PC Mic**: a TX Audio switch picks HAND MIC (the mic plugged into the radio, with a Hand Mic Gain slider) or PC MIC. With PC MIC you talk through a PC microphone or headset. The app sends the mic into the QMX over USB while the radio transmits in USB or LSB, with Mic Gain and a level meter. The Voice Keyer's SEND button transmits recorded messages the same way.
 - **TONE button**: sends the radio's built-in 700 + 1900 Hz two-tone test in USB or LSB. It stops by itself after 30 seconds.
 - **Clock**: shows local and UTC time side by side, set from internet time services. The local time zone can be chosen, and the QMX clock can be set to local or UTC time.
+- **60m channels**: the 60m band button tunes the four US 60m channels only, and the spectrum shows a magenta line for each channel that you can click to tune.
+- **Network connection**: run the radio from another computer on your Wi-Fi. The QMX+ plugs into a remote PC that runs the QMX Network Bridge; CONNECT NETWORK links the app to it.
 - **Auto Tune**: reads the panadapter spectrum and retunes onto the strongest nearby signal in CW and puts the 700 Hz carrier on the dial.
 
 ## Requirements
@@ -37,11 +39,54 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.36.html` | The app |
+| `QMX-Fusion-Panadapter-v3.37.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
 | `README.txt` | Setup notes |
+| `qmx_network_bridge.py` | Network bridge, runs on the PC the QMX+ is plugged into |
+| `Start QMX Network Bridge.bat` | Starts the bridge (installs its Python packages the first time) |
+| `Test QMX Network Bridge (no radio).bat` | Starts the bridge with a pretend radio, to test the Wi-Fi link |
+
+## Changes in v3.37
+- **60m button fixed.** The app only treated 5351.5 to 5366.5 kHz as 60m, so the button sent the radio to a frequency it did not count as 60m. It now opens on channel 1, 5330.5 kHz.
+- **Band buttons set the sideband.** When the mode is USB or LSB, 160m, 80m and 40m select LSB; 30m, 20m, 17m, 15m, 12m, 10m and 6m select USB; 60m selects DIGI. In CW or AM the band buttons leave the mode alone.
+- **60m channels.** On 60m the radio is tuned only to the channel frequencies:
+
+  | Channel | Carrier (DIGI, USB) | Centre (CW) |
+  |---|---|---|
+  | 1 | 5330.5 kHz | 5332.0 kHz |
+  | 2 | 5346.5 kHz | 5348.0 kHz |
+  | 3 | 5371.5 kHz | 5373.0 kHz |
+  | 4 | 5403.5 kHz | 5405.0 kHz |
+
+  - The spectrum and waterfall show a magenta line for each channel. Each line has a CH1 to CH4 label. Click a line or its label to tune to it. Channels outside the 48 kHz view show as arrow labels at the edge, and those can be clicked too.
+  - The tuning knob and arrow keys move one channel at a time. Typed frequencies go to the nearest channel.
+  - Transmit from the app is refused when the radio is not on a channel. Auto Tune is off on 60m.
+  - **On the radio**: Menu > System config > Band limits > None. With ITU Region 2 limits the QMX+ may refuse the carrier frequencies. The app reads this setting and warns if it is not None.
+- **Network connection.** Settings tab > Network Settings (below Panel Visibility; click the title to open or close it) holds the bridge computer's IP address, data port (default 50001) and audio port (default 50002). Radio tab > Serial > CONNECT NETWORK connects. See Network setup below.
+- Tested on the QMX+.
+
+## Network setup
+The QMX+ plugs by USB into a remote Windows PC on the same Wi-Fi router. That PC runs a small program, the bridge, which passes the radio's commands and audio over the network. The PC you operate from only needs Chrome and QMX Fusion-PA.
+
+On the remote PC (the one the QMX+ is plugged into):
+1. Install Python 3 from [python.org](https://www.python.org/downloads/) and tick "Add python.exe to PATH".
+2. Copy the QMX Fusion Local folder to it and double-click `Start QMX Network Bridge.bat`. The first time, it installs the Python packages it needs.
+3. If Windows Firewall asks, tick **Private networks** and click **Allow**.
+4. The window shows the PC's IP address (for example 192.168.1.25) and the ports. Leave the window open.
+
+On the PC you operate from:
+1. Settings tab > Network Settings (click the title to open it): type the IP address from the bridge window. Leave the ports at 50001 and 50002 unless you changed them.
+2. Click TEST CONNECTION. Both the data port and the audio port should show OK.
+3. Radio tab > Serial > CONNECT NETWORK. The status reads CONNECTED (NET). The panadapter, PC Receiver and PC Mic use the network audio.
+
+Notes:
+- `Test QMX Network Bridge (no radio).bat` runs a pretend radio, so you can check the link before using the real one.
+- To pick a different COM port or sound device, run `py -3 qmx_network_bridge.py --choose` on the remote PC. `--list` shows the devices.
+- An IP address can change when the router restarts. Your router's settings can reserve one for the remote PC.
+- Wi-Fi adds about a tenth of a second of delay, so CW sent from the PC keyboard feels a little behind.
+- The bridge has no password. Use it only on your own home network.
 
 ## Changes in v3.36
 - SWR on SSB voice now matches the two-tone test. The radio's SWR reading runs high at low power, and speech spends most of its time well below its peaks, so voice read higher than the steady two-tone into the same dummy load.

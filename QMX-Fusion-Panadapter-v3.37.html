@@ -8,7 +8,7 @@
 <meta property="og:image" content="https://Sparks72.github.io/QMX-new-GUI/screenshot1.png">
 <meta property="og:url" content="https://Sparks72.github.io/QMX-new-GUI/">
 <meta name="twitter:card" content="summary_large_image">
-    <title>QMX Transceiver Interface</title>
+    <title>QMX Fusion-PA v3.37</title>
   <!--Uncomment this next line if you don't have the sortable.min.js script in the same directory as the Interface file. -->  
    
 <dialog id="cwEditModal" aria-labelledby="cwEditorTitle" style="background:#202630;color:#eee;border:1px solid #888;border-radius:10px;padding:24px;width:min(520px,85vw);">
@@ -1829,6 +1829,13 @@
 #qmxtab-radio #paTuningPanel.rf-fit{box-sizing:border-box;display:flex;flex-direction:column}
 #qmxtab-radio #paTuningPanel.rf-fit .pa-step-row{margin-top:auto}
 /* ===== v3.09 drop-down panels: click the title to open/close ===== */
+#networkSettingsPanel.rf-fold>h3{cursor:pointer!important;user-select:none;display:flex;align-items:center;gap:6px}
+#networkSettingsPanel.rf-fold>h3::before{content:"\25BE";display:inline-block;width:1em;text-align:center;transition:transform .15s}
+#networkSettingsPanel.rf-fold>h3:hover{filter:brightness(1.25)}
+#networkSettingsPanel.rf-closed>h3{margin-bottom:0;border-bottom:none;padding-bottom:0}
+#networkSettingsPanel.rf-closed>h3::before{transform:rotate(-90deg)}
+#networkSettingsPanel.rf-closed>:not(h3){display:none!important}
+#networkSettingsPanel.rf-fold>h3:focus-visible{outline:2px solid var(--accent-color);outline-offset:2px}
 #qmxtab-radio .rf-fold>h3{cursor:pointer!important;user-select:none;display:flex;align-items:center;gap:6px}
 #qmxtab-radio .rf-fold>h3::before{content:"\25BE";display:inline-block;width:1em;text-align:center;transition:transform .15s}
 #qmxtab-radio .rf-fold>h3:hover{filter:brightness(1.25)}
@@ -1931,6 +1938,9 @@
 #qmxtab-radio #serialPanel .control-group label{margin:0 0 2px;display:block}
 #qmxtab-radio #serialPanel select{margin:0;padding:4px 6px}
 #qmxtab-radio #serialPanel #connectBtn{margin-top:6px!important}
+#qmxtab-radio #serialPanel #netConnectBtn{margin-top:5px!important;width:100%}
+#networkSettingsPanel input{box-sizing:border-box;width:100%;padding:5px 8px;margin:3px 0 9px;font-size:14px;border-radius:4px}
+#qmxtab-radio #serialPanel .btn:disabled{opacity:.45;cursor:not-allowed}
 #qmxtab-radio #serialPanel .btn{padding:5px 8px}
 #qmxtab-radio .mode-buttons{gap:5px}
 #qmxtab-radio .mode-btn{padding:4px 4px}
@@ -2032,6 +2042,7 @@
                     <select id="baudRate"><option value="115200" selected>115200</option></select>
                 </div>
                 <button id="connectBtn" class="btn btn-primary" style="margin-top:10px;">Connect Serial</button>
+                <button id="netConnectBtn" class="btn btn-primary" type="button" title="Connect to a QMX+ on another computer over Wi-Fi. Set the address in Settings > Network Settings.">Connect Network</button>
             
 						
 			
@@ -3004,6 +3015,16 @@
         <button class="btn btn-secondary" id="hideAllPanels">Hide All</button>
     </div>
 </div>
+<div class="panel rf-fold" data-fold="net" id="networkSettingsPanel">
+    <h3>Network Settings</h3>
+    <p style="font-size:12px;color:#9baebe;margin:0 0 8px">For a QMX+ plugged into another computer on your Wi-Fi. That computer runs <b>Start QMX Network Bridge.bat</b>; then press CONNECT NETWORK in the Serial box on the Radio tab.</p>
+    <div class="control-group"><label for="netIp">Bridge computer IP address</label><input type="text" id="netIp" placeholder="192.168.1.50" spellcheck="false" autocomplete="off"></div>
+    <div class="control-group"><label for="netDataPort">Data port (radio commands)</label><input type="number" id="netDataPort" min="1024" max="65535" step="1" value="50001"></div>
+    <div class="control-group"><label for="netAudioPort">Audio port (receive and transmit audio)</label><input type="number" id="netAudioPort" min="1024" max="65535" step="1" value="50002"></div>
+    <div class="controls-grid" style="margin-top:8px"><button class="btn btn-secondary" id="netTestBtn" type="button">TEST CONNECTION</button><button class="btn btn-secondary" id="netDefaultsBtn" type="button">DEFAULT PORTS</button></div>
+    <p id="netStatus" role="status" style="font-size:12px;margin-top:6px;color:#9baebe">Not connected.</p>
+    <p style="font-size:11px;color:#9baebe">The ports must match the ones shown in the bridge window. Settings save as you type.</p>
+</div>
             </div>
             <div class="right-panel" id="right-settings">
                 <div class="panel" id="solarConditionsPanel">
@@ -3387,7 +3408,7 @@ this.audioGainSlider = null;
     this.bugWpmSetting = 22; 
                 // NEW: Property to hold last-tuned frequencies per band - UPDATED with 60m
                 this.lastFrequencies = {
-                    '160': 1900000, '80': 3500000, '60': 5351500, '40': 7000000, '30': 10100000, '20': 14000000,
+                    '160': 1900000, '80': 3500000, '60': 5330500, '40': 7000000, '30': 10100000, '20': 14000000,
                     '17': 18068000, '15': 21000000, '12': 24890000, '10': 28000000, '6': 50000000
                 };
                 // NEW: Property for debouncing frequency saves
@@ -4560,7 +4581,7 @@ document.getElementById('vfoSwap').addEventListener('click', async () => {
 console.log('Freq:',freqMHz);   
    if (freqMHz >= 1.800 && freqMHz <= 2.000) return '160';
     if (freqMHz >= 3.500 && freqMHz <= 4.000) return '80';
-    if (freqMHz >= 5.3515 && freqMHz <= 5.3665) return '60'; // NEW: 60m band
+    if (freqMHz >= 5.250 && freqMHz <= 5.450) return '60'; // v3.37: whole 60m area, incl. US channels 5330.5-5403.5
     if (freqMHz >= 7.000 && freqMHz <= 7.300) return '40';
     if (freqMHz >= 10.100 && freqMHz <= 10.150) return '30';
     if (freqMHz >= 14.000 && freqMHz <= 14.350) return '20';
@@ -14361,19 +14382,25 @@ Capture not started. Input: browser default (QMX).`;
    await new Promise(r=>setTimeout(r,300));
    this.log('Opening selected stereo input…');
    if(!navigator.mediaDevices?.getUserMedia)throw Error('Audio capture API unavailable for this page.');
+   const NET=window.qmxNet&&window.qmxNet.active()?window.qmxNet:null;   // v3.37: I/Q from the network bridge
+   if(NET){this.captureMethod='Network bridge';this.stream=null;this.settings={channelCount:2,sampleRate:48000};this.device=NET.label();this.log(`Capture: ${this.device}.`);}
+   else{
    this.captureMethod=this.$('paInput').value==='__browser_default__'?'Browser default (verify actual device)':'Explicit device ID';
    this.stream=await navigator.mediaDevices.getUserMedia(this.captureConstraints(this.$('paInput').value));
    const track=this.stream.getAudioTracks()[0];this.settings=track.getSettings();this.device=track.label||'Unnamed input — QMX identity NOT verified';
-   this.log(`Capture device: ${this.device}. ${this.captureMethod}.`);track.onended=()=>this.stop('Input disconnected.');
+   this.log(`Capture device: ${this.device}. ${this.captureMethod}.`);track.onended=()=>this.stop('Input disconnected.');}
    this.context=new(window.AudioContext||window.webkitAudioContext)({sampleRate:48000});await Promise.race([this.context.resume(),new Promise(r=>setTimeout(r,500))]);
    this.rate=this.context.sampleRate;this.n=2048;this.fft=new ComplexFFT(this.n);
    this.r=new Float32Array(this.n);this.i=new Float32Array(this.n);this.db=new Float32Array(this.n);this.db.fill(-160);
    this.win=Float32Array.from({length:this.n},(_,k)=>.5-.5*Math.cos(2*Math.PI*k/(this.n-1)));this.sum=this.win.reduce((a,b)=>a+b,0);
-   this.source=this.context.createMediaStreamSource(this.stream);
+   if(NET){this.source=this.context.createConstantSource();this.source.offset.value=0;this.source.start();this.netBuf=[new Float32Array(this.n),new Float32Array(this.n)];NET.reset();}
+   else{this.source=this.context.createMediaStreamSource(this.stream);this.netBuf=null;}
    this.node=this.context.createScriptProcessor(this.n,2,1);this.mute=this.context.createGain();this.mute.gain.value=0;
    this.node.onaudioprocess=e=>{
     e.outputBuffer.getChannelData(0).fill(0);if(!this.running)return;
-    const a=e.inputBuffer.getChannelData(0),b=e.inputBuffer.numberOfChannels>1?e.inputBuffer.getChannelData(1):a;
+    let a,b;
+    if(this.netBuf){a=this.netBuf[0];b=this.netBuf[1];if(!window.qmxNet||!window.qmxNet.pull(a,b))return;}
+    else{a=e.inputBuffer.getChannelData(0);b=e.inputBuffer.numberOfChannels>1?e.inputBuffer.getChannelData(1):a;}
     if(!this.paused)this.process(a,b);if(this.rx)this.rx.run(a,b,e.outputBuffer.getChannelData(0));this.frames++;this.last=performance.now();
    };
    this.source.connect(this.node);if(window.qmxPcDsp)window.qmxPcDsp.attach(this.context,this.node,this.mute);else this.node.connect(this.mute);this.mute.connect(this.context.destination);if(this.rx)this.rx.attach();
@@ -14612,7 +14639,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.36',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.37',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });
@@ -15267,15 +15294,19 @@ document.addEventListener('DOMContentLoaded', () => {
   if(!co){const q=outs.find(d=>isQMX(d.label));if(q)co=q.deviceId;}
   outSel.replaceChildren(new Option('Not set',''));
   outs.forEach((d,i)=>outSel.add(new Option(d.label||`Playback device ${i+1}`,d.deviceId)));
+  const NETID='__qmxnet__',net=!!(window.qmxNet&&window.qmxNet.active());   // v3.37: QMX+ over the network
+  if(net){outSel.add(new Option('QMX+ over network ('+window.qmxNet.host()+')',NETID));co=NETID;}
+  else if(co===NETID)co=(outs.find(d=>isQMX(d.label))||{}).deviceId||'';
   outSel.value=co||'';
   if(inSel.value!==sIn)saveIn();
-  if(outSel.value!==sOut)saveOut();
+  if(outSel.value!==sOut&&outSel.value!==NETID)saveOut();
  }
  const saveIn=()=>{save('qmxMicIn',inSel.value);save('qmxMicInLabel',inSel.value?inSel.selectedOptions[0]?.text||'':'');};
  const saveOut=()=>{save('qmxMicOut',outSel.value);save('qmxMicOutLabel',outSel.value?outSel.selectedOptions[0]?.text||'':'');};
  $('micRefresh').onclick=async()=>{let s=null;try{s=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){E.err='Audio access blocked: click the microphone icon in the address bar, choose Allow, then REFRESH.';}
   await fill();s?.getTracks().forEach(t=>t.stop());paint();};
  navigator.mediaDevices?.addEventListener?.('devicechange',()=>fill());
+ window.addEventListener('qmxnet-change',async()=>{await fill();E.sinkOk=false;if(E.ctx&&outSel.value)await setSink();paint();});   // v3.37
  inSel.onchange=async()=>{saveIn();if(on.checked){closeMic();await openMic();}paint();};
  outSel.onchange=async()=>{saveOut();E.sinkOk=false;if(E.ctx)await setSink();paint();};
 
@@ -15308,10 +15339,21 @@ document.addEventListener('DOMContentLoaded', () => {
   const id=outSel.value;E.sinkId=id;E.sinkOk=false;
   if(!id){E.err='';return false;}
   const ctx=E.ctx;
+  try{E.clip.disconnect();E.clip.connect(E.an);}catch(e){}   // v3.37: drop the old route before choosing the new one
+  if(E.netTap){try{E.netTap.disconnect();}catch(e){}E.netTap.onaudioprocess=null;E.netTap=null;}
+  if(id==='__qmxnet__'){
+   if(!(window.qmxNet&&window.qmxNet.active())){E.err='Network not connected.';return false;}
+   try{if(ctx.setSinkId)await ctx.setSinkId('');}catch(e){}
+   const tap=E.netTap=ctx.createScriptProcessor(1024,1,1),mute=ctx.createGain();mute.gain.value=0;
+   tap.onaudioprocess=ev=>{ev.outputBuffer.getChannelData(0).fill(0);const a=app();if(a&&a.transmitting)window.qmxNet?.sendTx(ev.inputBuffer.getChannelData(0));};
+   E.clip.connect(tap);tap.connect(mute);mute.connect(ctx.destination);
+   if(ctx.state!=='running')await ctx.resume().catch(()=>{});
+   E.sinkOk=true;E.err='';log('sending transmit audio over the network to '+window.qmxNet.host());return true;
+  }
   try{
    if(ctx.setSinkId){await ctx.setSinkId(id);E.clip.connect(ctx.destination);}
    else{ // older Chrome: play through a hidden <audio> element that can choose its output
-    if(!E.dest){E.dest=ctx.createMediaStreamDestination();E.clip.connect(E.dest);}
+    if(!E.dest)E.dest=ctx.createMediaStreamDestination();E.clip.connect(E.dest);
     E.el=E.el||new Audio();E.el.srcObject=E.dest.stream;
     if(!E.el.setSinkId)throw Object.assign(Error('this browser cannot choose an output'),{name:'NotSupportedError'});
     await E.el.setSinkId(id);await E.el.play().catch(()=>{});
@@ -15660,5 +15702,331 @@ document.addEventListener('DOMContentLoaded', () => {
 })();
 </script>
 
+
+<script>
+// ── v3.37 Network connection: QMX+ on another computer, through "QMX Network Bridge" ──
+// The bridge program on that computer opens the radio's COM port and its USB sound card.
+// Data port: radio (CAT) commands both ways. Audio port: 48 kHz stereo I/Q from the radio (16-bit),
+// and 48 kHz mono transmit audio to the radio while transmitting.
+(function(){
+ const $=id=>document.getElementById(id);
+ const app=()=>window.qmxApp;
+ const ls=(k,d)=>{try{const v=localStorage.getItem(k);return v===null?d:v;}catch{return d;}};
+ const save=(k,v)=>{try{localStorage.setItem(k,v);}catch{}};
+ const DEF={data:50001,audio:50002};
+ // the first v3.37 test copy used 8740/8741: move those saved values to the new defaults
+ try{if(localStorage.getItem('qmxNetDataPort')==='8740')localStorage.setItem('qmxNetDataPort','50001');if(localStorage.getItem('qmxNetAudioPort')==='8741')localStorage.setItem('qmxNetAudioPort','50002');}catch{}
+ const st={on:false,host:'',dataWs:null,audioWs:null,info:null,ainfo:null,bytes:0,under:0,drops:0,lastAudio:0,connecting:false,msg:'Not connected.',msgColor:'#9baebe'};
+ // receive ring buffer (about 2 s)
+ const CAP=96000,L=new Float32Array(CAP),R=new Float32Array(CAP),PRIME=4096,MAXQ=19200;
+ let w=0,r=0,count=0,priming=true;
+ function reset(){w=r=count=0;priming=true;}
+ function push(buf){
+  const s=new Int16Array(buf),n=s.length>>1;
+  for(let k=0;k<n;k++){L[w]=s[2*k]/32768;R[w]=s[2*k+1]/32768;w=(w+1)%CAP;}
+  count+=n;st.lastAudio=performance.now();st.bytes+=buf.byteLength;
+  if(count>MAXQ){const drop=count-PRIME*2;r=(r+drop)%CAP;count-=drop;st.drops++;}   // too far behind: catch up
+ }
+ function pull(a,b){
+  const n=a.length;
+  if(priming){if(count<PRIME+n)return false;priming=false;}
+  if(count<n){priming=true;st.under++;return false;}
+  for(let k=0;k<n;k++){a[k]=L[r];b[k]=R[r];r=(r+1)%CAP;}
+  count-=n;return true;
+ }
+ function sendTx(f32){
+  const ws=st.audioWs;if(!ws||ws.readyState!==1||ws.bufferedAmount>96000)return;
+  const o=new Int16Array(f32.length);for(let k=0;k<f32.length;k++){const v=Math.max(-1,Math.min(1,f32[k]));o[k]=v<0?v*32768:v*32767;}
+  ws.send(o.buffer);
+ }
+ const settings=()=>({ip:String(ls('qmxNetIp','')).trim(),data:parseInt(ls('qmxNetDataPort',String(DEF.data)),10)||DEF.data,audio:parseInt(ls('qmxNetAudioPort',String(DEF.audio)),10)||DEF.audio});
+ const validHost=h=>/^[A-Za-z0-9.\-]+$/.test(h)&&h.length>0;
+ function say(t,c){st.msg=t;st.msgColor=c||'#9baebe';const el=$('netStatus');if(el){el.textContent=t;el.style.color=st.msgColor;}}
+ function log(m,t='info'){try{app().logCAT('Network: '+m,t);}catch{}}
+ function openWs(url,ms){return new Promise((res,rej)=>{let done=false,ws;
+  try{ws=new WebSocket(url);}catch(e){rej(e);return;}
+  ws.binaryType='arraybuffer';
+  const t=setTimeout(()=>{if(done)return;done=true;try{ws.close();}catch{}rej(new Error('no answer within '+(ms/1000)+' s'));},ms);
+  ws.onopen=()=>{if(done)return;done=true;clearTimeout(t);res(ws);};
+  ws.onerror=()=>{if(done)return;done=true;clearTimeout(t);rej(new Error('connection refused or blocked'));};
+ });}
+ // A stand-in for a Web Serial port, so the app's normal read loop and send code work unchanged.
+ function makePort(ws){
+  let ctl;
+  const readable=new ReadableStream({start(c){ctl=c;},cancel(){}});
+  ws.onmessage=ev=>{
+   if(typeof ev.data==='string'){try{const j=JSON.parse(ev.data);if(j.type==='hello'){st.info=j;paintStatus();}else if(j.type==='error'){log(j.message,'error');say('Bridge: '+j.message,'#ff6b6b');}}catch{}return;}
+   try{ctl.enqueue(new Uint8Array(ev.data));}catch{}
+  };
+  ws.onclose=()=>{try{ctl.close();}catch{}};
+  const writable=new WritableStream({write(chunk){
+   if(ws.readyState!==1)throw Object.assign(new Error('The port is not open'),{name:'NetworkError'});
+   ws.send(chunk);}});
+  return {readable,writable,isNetwork:true,getInfo:()=>({}),async close(){try{ws.close();}catch{}}};
+ }
+ function closeAudio(){const ws=st.audioWs;st.audioWs=null;if(ws){ws.onclose=null;try{ws.close();}catch{}}reset();}
+ function cleanup(why){
+  const was=st.on;st.on=false;st.dataWs=null;closeAudio();st.info=null;st.ainfo=null;
+  const a=app();if(a)a.netMode=false;
+  if(was){say(why||'Disconnected.','#9baebe');window.dispatchEvent(new Event('qmxnet-change'));}
+  paintButtons();
+ }
+ async function connect(){
+  const a=app();if(!a||a.connected||st.connecting)return;
+  const s=settings();
+  if(!validHost(s.ip)){say('Type the bridge computer\'s IP address in Settings > Network Settings first.','#ffc857');document.querySelector('.qmx-tab-btn[data-tab="qmxtab-settings"]')?.click();window.qmxNetFold?.(false);$('netIp')?.focus();return;}
+  st.connecting=true;paintButtons();say(`Connecting to ${s.ip} (data port ${s.data}, audio port ${s.audio})…`,'#ffc857');
+  let dws=null;
+  try{
+   dws=await openWs(`ws://${s.ip}:${s.data}`,5000);
+   let aws=null;
+   try{aws=await openWs(`ws://${s.ip}:${s.audio}`,5000);}catch(e){log(`audio port ${s.audio}: ${e.message}. Radio control works; spectrum and audio will not.`,'error');}
+   st.on=true;st.host=s.ip;st.dataWs=dws;st.under=0;st.drops=0;st.bytes=0;reset();
+   if(aws){st.audioWs=aws;aws.onmessage=ev=>{if(typeof ev.data==='string'){try{const j=JSON.parse(ev.data);if(j.type==='hello'){st.ainfo=j;paintStatus();}}catch{}return;}push(ev.data);};
+    aws.onclose=()=>{if(st.audioWs===aws){st.audioWs=null;log('audio connection closed by the bridge','error');paintStatus();}};}
+   const port=makePort(dws);
+   a.netMode=true;a.port=port;a.reader=port.readable.getReader();a.writer=port.writable.getWriter();
+   a.connected=true;if(a.sounds)try{a.sounds.connect();}catch{}
+   a.lastCommandTime=Date.now();a.updateConnectionStatus();
+   a.logCAT(`Network connected to ${s.ip}:${s.data}${aws?` (audio ${s.audio})`:''}`,'rx');
+   await a.sendCommand('QB0');await a.sendCommand('Q90');
+   a.startReading();a.startConnectionHealthCheck();await a.initializeRadio();a.startPolling();
+   window.dispatchEvent(new Event('qmxnet-change'));
+   say(`Connected to ${s.ip}.`,'#36e7a0');
+  }catch(e){
+   try{dws?.close();}catch{}
+   cleanup();a.netMode=false;
+   say(`Could not connect to ${s.ip}:${s.data} (${e.message}). Check that the bridge window is open on that computer, the IP address and ports match, and Windows Firewall allows it.`,'#ff6b6b');
+   log(`connect failed: ${e.message}`,'error');
+  }finally{st.connecting=false;paintButtons();}
+ }
+ async function disconnect(){const a=app();if(!a)return;if(a.connected&&a.netMode)await a.disconnectSerial();cleanup('Disconnected.');}
+ async function test(){
+  const s=settings();if(!validHost(s.ip)){say('Type the bridge computer\'s IP address first.','#ffc857');return;}
+  if(st.on){paintStatus();return;}
+  say(`Testing ${s.ip}…`,'#ffc857');const out=[];
+  for(const [name,port] of [['Data',s.data],['Audio',s.audio]]){
+   try{const ws=await openWs(`ws://${s.ip}:${port}`,4000);
+    const hello=await new Promise(res=>{const t=setTimeout(()=>res(null),1500);ws.onmessage=ev=>{if(typeof ev.data==='string'){clearTimeout(t);try{res(JSON.parse(ev.data));}catch{res(null);}}};});
+    try{ws.close();}catch{}
+    out.push(`${name} port ${port}: OK${hello?.detail?' — '+hello.detail:''}`);
+   }catch(e){out.push(`${name} port ${port}: ${e.message}`);}
+  }
+  const ok=out.every(t=>/: OK/.test(t));
+  say(out.join('. ')+'.',ok?'#36e7a0':'#ff6b6b');
+ }
+ function paintStatus(){
+  if(!st.on)return;
+  const a=st.audioWs?`audio ${(count/48).toFixed(0)} ms buffered, ${st.under} gaps`:'no audio connection';
+  const d=st.info?.detail?` Radio: ${st.info.detail}.`:'';
+  say(`Connected to ${st.host}: ${a}.${d}`,st.audioWs?'#36e7a0':'#ffc857');
+ }
+ function paintButtons(){
+  const a=app(),nb=$('netConnectBtn'),sb=$('connectBtn');if(!nb||!sb||!a)return;
+  const net=!!(a.connected&&a.netMode),ser=!!(a.connected&&!a.netMode);
+  nb.textContent=st.connecting?'Connecting…':net?'Disconnect':'Connect Network';
+  nb.classList.toggle('btn-danger',net);nb.classList.toggle('btn-primary',!net);
+  nb.disabled=ser||st.connecting;sb.disabled=net||st.connecting;
+  if(net){sb.textContent='Connect Serial';sb.classList.remove('btn-danger');sb.classList.add('btn-primary');
+   const t=$('statusText');if(t)t.textContent='CONNECTED (NET)';}
+ }
+ window.qmxNet={active:()=>st.on,host:()=>st.host,label:()=>`QMX+ over network (${st.host})`,pull,reset,sendTx,connect,disconnect,state:st};
+ function install(){
+  const a=app();if(!a||!$('netConnectBtn')){setTimeout(install,200);return;}
+  a.netMode=false;
+  // settings box
+  const ip=$('netIp'),dp=$('netDataPort'),ap=$('netAudioPort');
+  ip.value=ls('qmxNetIp','');dp.value=ls('qmxNetDataPort',String(DEF.data));ap.value=ls('qmxNetAudioPort',String(DEF.audio));
+  ip.addEventListener('input',()=>save('qmxNetIp',ip.value.trim()));
+  const port=(el,k)=>el.addEventListener('change',()=>{let v=parseInt(el.value,10);if(!(v>=1024&&v<=65535))v=k==='qmxNetDataPort'?DEF.data:DEF.audio;el.value=v;save(k,String(v));});
+  port(dp,'qmxNetDataPort');port(ap,'qmxNetAudioPort');
+  dp.addEventListener('input',()=>{const v=parseInt(dp.value,10);if(v>=1024&&v<=65535)save('qmxNetDataPort',String(v));});
+  ap.addEventListener('input',()=>{const v=parseInt(ap.value,10);if(v>=1024&&v<=65535)save('qmxNetAudioPort',String(v));});
+  $('netDefaultsBtn').onclick=()=>{dp.value=DEF.data;ap.value=DEF.audio;save('qmxNetDataPort',String(DEF.data));save('qmxNetAudioPort',String(DEF.audio));say('Ports set to 50001 (data) and 50002 (audio).');};
+  $('netTestBtn').onclick=()=>test();
+  // keep the box just below Panel Visibility, unless it was dragged somewhere else
+  try{const lay=JSON.parse(localStorage.getItem('qmxTabbedPanelLayout_v213')||'{}');const placed=Object.values(lay).some(v=>Array.isArray(v)&&v.includes('networkSettingsPanel'));
+   if(!placed)$('panelVisibilitySettings')?.after($('networkSettingsPanel'));}catch{}
+  // buttons
+  $('netConnectBtn').addEventListener('click',()=>{const a=app();if(a.connected&&a.netMode)disconnect();else if(!a.connected)connect();});
+  const oUCS=a.updateConnectionStatus.bind(a);
+  a.updateConnectionStatus=function(){const r=oUCS();paintButtons();return r;};
+  const oDis=a.disconnectSerial.bind(a);
+  a.disconnectSerial=async function(){const net=this.netMode;const r=await oDis();if(net)cleanup('Disconnected.');return r;};
+  const oHW=a.handleHardwareDisconnect.bind(a);
+  a.handleHardwareDisconnect=function(){const net=this.netMode&&this.connected;const r=oHW();if(net){cleanup('The network connection was lost. Check the bridge computer, then press CONNECT NETWORK.');log('connection lost','error');}return r;};
+  setInterval(()=>{if(st.on)paintStatus();},1000);
+  paintButtons();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0));else install();
+})();
+
+// ── v3.37 60m channels, and band buttons that pick the sideband ──
+// US 60m: four channels. The transmit carrier (USB "dial") may only sit on 5330.5, 5346.5, 5371.5 or 5403.5 kHz
+// (CW sits on the channel centre). On 60m the tuning knob steps channel to channel, the spectrum shows a line for
+// each channel (click one to tune), and TX is refused if the radio is off a channel.
+// ---- Network Settings box opens and closes from its title, like the Radio tab drop-downs ----
+(function(){
+ const KEY='qmxNetFoldClosed',p=document.getElementById('networkSettingsPanel'),h=p?.querySelector(':scope>h3');if(!h)return;
+ h.tabIndex=0;h.setAttribute('role','button');
+ const set=c=>{p.classList.toggle('rf-closed',c);h.setAttribute('aria-expanded',String(!c));h.title=c?'Click to open':'Click to close';try{localStorage.setItem(KEY,c?'1':'0');}catch{}};
+ window.qmxNetFold=set;
+ let c=false;try{c=localStorage.getItem(KEY)==='1';}catch{}set(c);
+ const flip=()=>set(!p.classList.contains('rf-closed'));
+ h.addEventListener('click',flip);
+ h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();flip();}});
+})();
+(function(){
+ const CH=[{c:5330500,m:5332000},{c:5346500,m:5348000},{c:5371500,m:5373000},{c:5403500,m:5405000}];
+ const LSB_BANDS=['160','80','40'];
+ const app=()=>window.qmxApp;
+ const in60=hz=>hz>=5250000&&hz<=5450000;
+ const isCW=()=>/^CW/i.test(String(app()?.mode||''));
+ const list=()=>CH.map(ch=>isCW()?ch.m:ch.c);
+ const onCh=hz=>list().includes(Math.round(hz));
+ const nearest=hz=>list().reduce((b,f)=>Math.abs(f-hz)<Math.abs(b-hz)?f:b);
+ const kHz=hz=>(hz/1000).toFixed(1);
+ const log=(m,t='info')=>{try{app().logCAT('60m: '+m,t);}catch{}};
+ const st={autoDigi:false,acc:0,lastMove:0,warnAt:0,hits:[],limits:''};
+ window.qmx60={channels:CH,in60,onChannel:onCh,nearest,state:st};
+ function install(){
+  const a=app();
+  if(!a||!a.panadapterV2||!document.querySelector('.band-btn')||!window.qmxPcMic){setTimeout(install,200);return;}
+  setTimeout(()=>hook(a),800);   // after the Auto Tune and PC Mic modules have put their hooks in
+ }
+ function hook(a){
+  const pa=a.panadapterV2;
+  const oUF=a.updateFrequency.bind(a);
+  const tuneTo=hz=>{const d=Math.round(hz)-Math.round(Number(a.frequency)||0);if(d)oUF(d);a.sendFrequencyImmediate();};
+  // ---- radio commands: frequency snaps to a channel; TX refused off-channel ----
+  const oSend=a.sendCommand.bind(a);
+  a.sendCommand=async function(cmd){
+   const m=/^(F[AB])(\d{1,11})$/.exec(String(cmd));
+   if(m){const hz=parseInt(m[2],10);
+    if(in60(hz)&&!onCh(hz)){const f=nearest(hz);cmd=m[1]+String(f).padStart(11,'0');
+     if(Math.round(this.frequency)===hz){this.frequency=f;try{this.updateDisplay();this.saveLastFrequency();}catch{}}
+     log(`${kHz(hz)} kHz is not a 60m channel; set ${kHz(f)} kHz instead.`);}}
+   if(/^TX\d?$/.test(cmd)||/^KY\s/.test(cmd)){const f=Math.round(Number(this.frequency)||0);
+    if(in60(f)&&!onCh(f)){log(`transmit refused: ${kHz(f)} kHz is not a 60m channel ${isCW()?'centre':'carrier'} frequency. Click a channel line on the spectrum.`,'error');return false;}}
+   return oSend(cmd);
+  };
+  // ---- tuning on 60m: one channel per knob click / arrow key; dragging steps after a short turn ----
+  a.updateFrequency=function(delta){
+   const f=Math.round(Number(this.frequency)||0);
+   if(!in60(f))return oUF(delta);
+   const step=Math.max(1,Number(typeof this.getCurrentStepSize==='function'?this.getCurrentStepSize():this.stepSize)||1);
+   st.acc+=delta;
+   if(Math.abs(delta)<step*0.99&&Math.abs(st.acc)<step*9)return;
+   const dir=Math.sign(st.acc);st.acc=0;if(!dir)return;
+   const now=performance.now();if(now-st.lastMove<150)return;st.lastMove=now;
+   const Ls=list();let t;
+   if(onCh(f)){const i=Ls.indexOf(f);t=Ls[Math.max(0,Math.min(Ls.length-1,i+dir))];}
+   else t=dir>0?(Ls.find(x=>x>f)??Ls[Ls.length-1]):([...Ls].reverse().find(x=>x<f)??Ls[0]);
+   if(t!==f)oUF(t-f);
+  };
+  // ---- Auto Tune would move off the channel: not used on 60m ----
+  for(const k of ['triggerAutotuneScan','performAutotuneScan']){const o=a[k];if(typeof o==='function')a[k]=function(){if(in60(Number(this.frequency)))return;return o.apply(this,arguments);};}
+  document.addEventListener('click',e=>{const b=e.target.closest?.('#manualScanBtn');if(!b||!in60(Number(a.frequency)))return;
+   e.stopPropagation();e.preventDefault();const n=document.getElementById('autotuneNote');if(n){n.textContent='Not used on 60m: the channels are fixed.';n.style.color='#ffc857';}},true);
+  // ---- band 60m always opens on a channel ----
+  const oSBF=a.setBandFrequency.bind(a);
+  a.setBandFrequency=function(band){
+   if(band==='60'){const f=Number(this.lastFrequencies['60']);this.lastFrequencies['60']=in60(f)?nearest(f):CH[0].c;}
+   return oSBF(band);
+  };
+  // ---- band buttons choose the sideband (from USB/LSB, or the DIGI that 60m chose) ----
+  document.addEventListener('click',e=>{
+   const b=e.target.closest?.('.band-btn');if(!b)return;
+   const band=b.dataset.band,prev=String(a.mode||'');
+   const ssb=prev==='USB'||prev==='LSB'||(prev==='DIGI'&&(st.autoDigi||in60(Number(a.frequency))));
+   if(!ssb){st.autoDigi=false;return;}
+   const want=band==='60'?'DIGI':LSB_BANDS.includes(band)?'LSB':'USB';
+   st.autoDigi=band==='60';
+   setTimeout(()=>{if(a.mode!==want){const mb=document.querySelector(`.mode-btn[data-mode="${want}"]`);if(mb){mb.click();log(`${band}m band: mode set to ${want}.`);}}},180);
+  },true);
+  // ---- a mode change on 60m keeps the same channel (CW uses the centre, the others the carrier) ----
+  document.addEventListener('click',e=>{
+   const b=e.target.closest?.('.mode-btn');if(!b)return;
+   if(b.dataset.mode!=='DIGI')st.autoDigi=false;
+   const f=Math.round(Number(a.frequency)||0);if(!in60(f))return;
+   const i=CH.findIndex(ch=>ch.c===f||ch.m===f);
+   setTimeout(()=>{const t=i>=0?(isCW()?CH[i].m:CH[i].c):nearest(f);if(t!==Math.round(Number(a.frequency))&&a.connected&&!a.transmitting)tuneTo(t);},250);
+  },false);
+  // ---- spectrum: a line for each channel; click one to tune ----
+  const oPaint=pa.paint.bind(pa);
+  pa.paint=function(live){oPaint(live);try{draw(this);}catch(err){console.warn('60m overlay',err);}};
+  function draw(p){
+   st.hits=[];
+   const f=p.dialHz();if(!in60(f))return;
+   const c=p.$('paSpectrum'),x=c.getContext('2d'),w=c.width,h=c.height,Ls=list(),cw=isCW();
+   const tags={l:[],r:[]};
+   x.save();x.font='bold 19px monospace';x.textBaseline='alphabetic';
+   Ls.forEach((hz,i)=>{
+    const px=p.xAtHz(hz,w),on=Math.round(f)===hz,lab=`CH${i+1}`;
+    if(px<0||px>w){tags[px<0?'l':'r'].push({hz,i,lab});return;}
+    if(!cw){const x2=p.xAtHz(hz+2800,w),a0=Math.max(0,Math.min(px,x2)),a1=Math.min(w,Math.max(px,x2));x.fillStyle=on?'rgba(255,92,240,.14)':'rgba(255,92,240,.07)';x.fillRect(a0,34,a1-a0,h-59);}
+    x.strokeStyle=on?'#ff5cf0':'rgba(255,92,240,.9)';x.lineWidth=on?3:2;x.setLineDash(on?[]:[7,5]);
+    x.beginPath();x.moveTo(Math.round(px)+.5,34);x.lineTo(Math.round(px)+.5,h-25);x.stroke();x.setLineDash([]);
+    const tw=x.measureText(lab).width+12,tx=Math.max(2,Math.min(w-tw-2,px-tw/2)),ty=h-56;
+    x.fillStyle=on?'#ff5cf0':'rgba(8,14,22,.92)';x.fillRect(tx,ty,tw,26);x.strokeStyle='#ff5cf0';x.lineWidth=1;x.strokeRect(tx+.5,ty+.5,tw-1,25);
+    x.fillStyle=on?'#080e16':'#ff9cf6';x.fillText(lab,tx+6,ty+20);
+    st.hits.push({x0:Math.min(tx,px-10),x1:Math.max(tx+tw,px+10),y0:0,y1:h,hz});
+   });
+   for(const side of ['l','r'])tags[side].forEach((t,k)=>{
+    const lab=side==='l'?`◀ ${t.lab}`:`${t.lab} ▶`,tw=x.measureText(lab).width+14,ty=36+k*32,tx=side==='l'?60:w-tw-26;
+    x.fillStyle='rgba(8,14,22,.92)';x.fillRect(tx,ty,tw,28);x.strokeStyle='#ff5cf0';x.lineWidth=1;x.strokeRect(tx+.5,ty+.5,tw-1,27);
+    x.fillStyle='#ff9cf6';x.fillText(lab,tx+7,ty+21);st.hits.push({x0:tx,x1:tx+tw,y0:ty,y1:ty+28,hz:t.hz});
+   });
+   let warn='';
+   if(st.limits)warn=`QMX+ Band limits is "${st.limits}". Set radio menu System config > Band limits to None for the 60m channel carriers.`;
+   if(!onCh(f)){
+    const centre=!cw&&CH.some(ch=>ch.m===Math.round(f));
+    warn=centre?`Radio is on the channel centre ${kHz(f)} kHz: TX blocked. Set radio menu System config > Band limits to None, then click a line.`:`Off channel (${kHz(f)} kHz): TX is blocked. Click a channel line.`;
+    const now=performance.now();if(centre&&now-st.warnAt>30000){st.warnAt=now;log(warn,'error');}
+   }
+   if(warn){x.font='bold 16px monospace';let msg=warn;while(x.measureText(msg).width>w-20&&msg.length>20)msg=msg.slice(0,-2);if(msg!==warn)msg=msg.slice(0,-1)+'…';
+    const tw=x.measureText(msg).width+12,tx=Math.max(2,(w-tw)/2);
+    x.fillStyle='rgba(60,40,0,.94)';x.fillRect(tx,h-88,tw,26);x.fillStyle='#ffc857';x.fillText(msg,tx+6,h-69);}
+   x.restore();
+   // channel ticks on the waterfall scale
+   const ax=p.$('paWaterfallAxis');if(ax){const y=ax.getContext('2d'),aw=ax.width;y.fillStyle='#ff5cf0';
+    Ls.forEach(hz=>{const px=p.xAtHz(hz,aw);if(px>=0&&px<=aw)y.fillRect(Math.round(px)-1,0,3,7);});}
+  }
+  const host=pa.$('paSpectrum')?.parentElement;
+  const hitAt=e=>{const c=pa.$('paSpectrum'),r=c.getBoundingClientRect(),px=(e.clientX-r.left)*c.width/r.width,py=(e.clientY-r.top)*c.height/r.height;
+   return st.hits.find(t=>px>=t.x0&&px<=t.x1&&py>=t.y0&&py<=t.y1)||null;};
+  const clickTune=(e,isSpec)=>{
+   const f=Math.round(Number(a.frequency)||0);if(!in60(f))return;
+   e.stopImmediatePropagation();e.preventDefault();
+   if(!a.connected){pa.log('Connect the radio first.');return;}
+   if(a.transmitting){pa.log('Channel change ignored while transmitting.');return;}
+   let t=isSpec?hitAt(e)?.hz:null;
+   if(t==null){const c=e.target,r=c.getBoundingClientRect(),px=(e.clientX-r.left)*c.width/r.width;t=nearest(pa.hzAtX(px,c.width));}
+   if(t===f){pa.log(`Already on ${kHz(t)} kHz.`);return;}
+   tuneTo(t);const i=list().indexOf(t);pa.log(`60m channel ${i+1}: ${kHz(t)} kHz.`);
+  };
+  if(host){
+   host.addEventListener('click',e=>{if(e.target.id==='paSpectrum')clickTune(e,true);},true);
+   host.addEventListener('mousemove',e=>{if(e.target.id!=='paSpectrum')return;const hit=in60(Number(a.frequency))?hitAt(e):null;e.target.style.cursor=hit?'pointer':'';
+    if(hit){const hv=pa.$('paHover');if(hv)hv.textContent=`60m channel ${list().indexOf(hit.hz)+1}: ${kHz(hit.hz)} kHz — click to tune`;}});
+  }
+  const wf=pa.$('paWaterfall');
+  if(wf&&wf.parentElement)wf.parentElement.addEventListener('click',e=>{if(e.target===wf)clickTune(e,false);},true);
+  // ---- read (never write) the radio's Band limits once per connection, when 60m is in use ----
+  let checking=false,checked=false;
+  setInterval(async()=>{
+   if(!a.connected){checked=false;st.limits='';return;}
+   if(checked||checking||!in60(Number(a.frequency))||a.transmitting||!window.qmxMM)return;
+   checking=true;
+   try{const M=window.qmxMM,v=M.bodyOf(await M.q2('MMSystem config|Band limits'));checked=true;
+    if(v&&!/none/i.test(v)){st.limits=String(v).trim();log(`the radio's Band limits is "${st.limits}". With that setting the QMX+ may refuse to transmit on the 60m channel carriers. Set radio menu System config > Band limits to None so the carrier can sit on 5330.5, 5346.5, 5371.5 and 5403.5 kHz. This app keeps the radio on those four.`,'error');}
+    else{st.limits='';if(v)log(`the radio's Band limits is "${v}"; this app keeps 60m on the four channels.`);}
+   }catch(e){}finally{checking=false;}
+  },1000);
+  log('channel lock ready (5330.5, 5346.5, 5371.5, 5403.5 kHz).');
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,0));else install();
+})();
+</script>
 
 </html>
