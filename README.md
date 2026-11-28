@@ -4,7 +4,7 @@ QMX Fusion-PA v3.37 on the QMX+: 60m channel 4 (5403.5 kHz) in DIGI, with the CH
 
 QMX Fusion-PA is a single-file browser app for the QRP Labs QMX+ transceiver. The original creator of QMX-Fusion is Paul - DJ0CU/G4ADF this is an update to his work and effort at creating a really great WebApp for the QMX+ Transceiver. It runs in Google Chrome on a Windows PC and talks to the radio over its USB serial (CAT) port and USB audio.
 
-Current version: **v3.37**
+Current version: **v3.38**
 
 ## Features
 
@@ -40,7 +40,7 @@ The app runs from a local web address, not straight from the file. That way Chro
 
 | File | Purpose |
 |---|---|
-| `QMX-Fusion-Panadapter-v3.37.html` | The app |
+| `QMX-Fusion-Panadapter-v3.38.html` | The app |
 | `qmx_fusion_server.py` | Local web server on port 8737 |
 | `Start QMX Fusion.bat` | Starts the server and opens Chrome |
 | `default-version.txt` | Picks the version the plain address opens |
@@ -48,6 +48,10 @@ The app runs from a local web address, not straight from the file. That way Chro
 | `qmx_network_bridge.py` | Network bridge, runs on the PC the QMX+ is plugged into |
 | `Start QMX Network Bridge.bat` | Starts the bridge (installs its Python packages the first time) |
 | `Test QMX Network Bridge (no radio).bat` | Starts the bridge with a pretend radio, to test the Wi-Fi link |
+
+## Changes in v3.38
+- **PC mic over the network fixed.** On a computer with no QMX+ plugged in, the PC mic could not open when the page loaded, because To Radio had no QMX device to use yet. After CONNECT NETWORK the mic was never tried again, so the status line stayed on "Opening the microphone…" and the radio transmitted silence. The mic now opens as soon as the network connection supplies "QMX+ over network", and any click on the page retries it.
+- **No more waiting on Chrome's audio wake-up.** Chrome holds back page audio until the first click. The mic start-up no longer waits for that, so it cannot get stuck.
 
 ## Changes in v3.37
 - **60m button fixed.** The app only treated 5351.5 to 5366.5 kHz as 60m, so the button sent the radio to a frequency it did not count as 60m. It now opens on channel 1, 5330.5 kHz.

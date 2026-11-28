@@ -8,7 +8,7 @@
 <meta property="og:image" content="https://Sparks72.github.io/QMX-new-GUI/screenshot1.png">
 <meta property="og:url" content="https://Sparks72.github.io/QMX-new-GUI/">
 <meta name="twitter:card" content="summary_large_image">
-    <title>QMX Fusion-PA v3.37</title>
+    <title>QMX Fusion-PA v3.38</title>
   <!--Uncomment this next line if you don't have the sortable.min.js script in the same directory as the Interface file. -->  
    
 <dialog id="cwEditModal" aria-labelledby="cwEditorTitle" style="background:#202630;color:#eee;border:1px solid #888;border-radius:10px;padding:24px;width:min(520px,85vw);">
@@ -14639,7 +14639,7 @@ document.addEventListener('DOMContentLoaded', () => {
  const status=(t,c)=>{const s=$('backupStatus');if(s){s.textContent=t;s.style.color=c||'#36e7a0';}};
  $('backupSaveBtn')?.addEventListener('click',()=>{
   const data={};for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(/^qmx/i.test(k))data[k]=localStorage.getItem(k);}
-  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.37',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
+  const blob=new Blob([JSON.stringify({app:'QMX Fusion-PA',version:'v3.38',saved:new Date().toISOString(),from:location.href.split('?')[0],settings:data},null,1)],{type:'application/json'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`QMX-Fusion-PA-settings-${new Date().toISOString().slice(0,10)}.json`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000);
   status(`Saved ${Object.keys(data).length} settings to your Downloads folder.`);
  });
@@ -15306,7 +15306,9 @@ document.addEventListener('DOMContentLoaded', () => {
  $('micRefresh').onclick=async()=>{let s=null;try{s=await navigator.mediaDevices.getUserMedia({audio:true});}catch(e){E.err='Audio access blocked: click the microphone icon in the address bar, choose Allow, then REFRESH.';}
   await fill();s?.getTracks().forEach(t=>t.stop());paint();};
  navigator.mediaDevices?.addEventListener?.('devicechange',()=>fill());
- window.addEventListener('qmxnet-change',async()=>{await fill();E.sinkOk=false;if(E.ctx&&outSel.value)await setSink();paint();});   // v3.37
+ window.addEventListener('qmxnet-change',async()=>{await fill();E.sinkOk=false;if(E.ctx&&outSel.value)await setSink();
+  if(on.checked&&!E.mic&&outSel.value){E.err='';await openMic();}   // v3.38: open the PC mic now that To Radio exists (it could not open at page load on a PC without a QMX)
+  paint();});   // v3.37
  inSel.onchange=async()=>{saveIn();if(on.checked){closeMic();await openMic();}paint();};
  outSel.onchange=async()=>{saveOut();E.sinkOk=false;if(E.ctx)await setSink();paint();};
 
@@ -15347,7 +15349,7 @@ document.addEventListener('DOMContentLoaded', () => {
    const tap=E.netTap=ctx.createScriptProcessor(1024,1,1),mute=ctx.createGain();mute.gain.value=0;
    tap.onaudioprocess=ev=>{ev.outputBuffer.getChannelData(0).fill(0);const a=app();if(a&&a.transmitting)window.qmxNet?.sendTx(ev.inputBuffer.getChannelData(0));};
    E.clip.connect(tap);tap.connect(mute);mute.connect(ctx.destination);
-   if(ctx.state!=='running')await ctx.resume().catch(()=>{});
+   wake();
    E.sinkOk=true;E.err='';log('sending transmit audio over the network to '+window.qmxNet.host());return true;
   }
   try{
@@ -15358,7 +15360,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(!E.el.setSinkId)throw Object.assign(Error('this browser cannot choose an output'),{name:'NotSupportedError'});
     await E.el.setSinkId(id);await E.el.play().catch(()=>{});
    }
-   if(ctx.state!=='running')await ctx.resume().catch(()=>{});
+   wake();
    E.sinkOk=true;E.err='';return true;
   }catch(e){E.err=`Could not open "${outSel.selectedOptions[0]?.text||'To Radio'}" (${e.name||e.message}).`;log(E.err,'error');return false;}
  }
@@ -15367,9 +15369,11 @@ document.addEventListener('DOMContentLoaded', () => {
   if(!outSel.value){E.err='Choose the QMX in To Radio.';return false;}
   build();
   if(!E.sinkOk||E.sinkId!==outSel.value){if(!await setSink())return false;}
-  if(E.ctx.state!=='running')await E.ctx.resume().catch(()=>{});
+  wake();
   return true;
  }
+ // v3.38: wake the audio without waiting for it; before the first click Chrome holds the wake-up, and waiting here left the mic stuck on "Opening"
+ function wake(){if(E.ctx&&E.ctx.state!=='running')E.ctx.resume().catch(()=>{});}
  async function openMic(){
   if(E.mic||E.opening)return true;E.opening=true;
   try{
@@ -15600,7 +15604,9 @@ document.addEventListener('DOMContentLoaded', () => {
  setInterval(()=>{if(spaceTx&&!app()?.transmitting){spaceTx=false;clearTimeout(spaceTimer);spaceTimer=null;}},300);
  // Chrome starts audio only after a click on the page; TX or any click wakes it up.
  document.addEventListener('pointerdown',()=>{if(E.ctx&&E.ctx.state==='suspended')E.ctx.resume().catch(()=>{});
-  else if(!E.ctx&&outSel.value)ensureOut().then(()=>paint());},true);   // v3.31: To Radio stream runs from the first click, so the QMX already has USB audio before any TX
+  else if(!E.ctx&&outSel.value)ensureOut().then(()=>paint());
+  if(on.checked&&!E.mic&&!E.opening&&outSel.value)openMic().then(()=>paint());   // v3.38: a click also retries a PC mic that has not opened
+ },true);   // v3.31: To Radio stream runs from the first click, so the QMX already has USB audio before any TX
  window.addEventListener('pagehide',()=>{closeMic();});
  fill().then(async()=>{if(on.checked){await openMic();}paint();});
  paint();

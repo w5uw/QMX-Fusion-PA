@@ -27,7 +27,7 @@ Tip: right-click the .bat > Send to > Desktop (create shortcut).
 
 DEFAULT VERSION
 http://localhost:8737/ opens the version named in default-version.txt
-(now QMX-Fusion-Panadapter-v3.37.html). To change it, open default-version.txt
+(now QMX-Fusion-Panadapter-v3.38.html). To change it, open default-version.txt
 in Notepad, type the other file name, save, and restart the .bat.
 Delete default-version.txt to always open the newest version instead.
 
